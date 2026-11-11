@@ -29,6 +29,12 @@ export function Licensee() {
     () => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // The band opens from a rounded, inset frame to full bleed as it arrives (four-value insets on both ends).
+        gsap.fromTo(
+          ref.current,
+          { clipPath: "inset(8% 4% 0% 4% round 28px)" },
+          { clipPath: "inset(0% 0% 0% 0% round 0px)", ease: "none", scrollTrigger: { trigger: ref.current, start: "top bottom", end: "top 30%", scrub: 0.8 } },
+        );
         const range = { trigger: ref.current, start: "top bottom", end: "bottom top", scrub: 0.8 };
         // Each ring drifts at its own speed so the "ooo" slides apart behind the copy.
         gsap.utils.toArray<HTMLElement>("[data-ring]").forEach((ring, i) => {

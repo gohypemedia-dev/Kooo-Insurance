@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
@@ -21,6 +21,8 @@ const STORM = new THREE.Color("#2a3348");
    outside React, because the film is driven imperatively from the render loop. */
 const tmp = { pos: new THREE.Vector3(), look: new THREE.Vector3(), sky: new THREE.Color(), color: new THREE.Color() };
 const dummy = new THREE.Object3D();
+/** Pointer position across the window (-1 to 1), and the eased value the camera follows. */
+const pointer = { x: 0, y: 0, easedX: 0, easedY: 0 };
 const windowMat = new THREE.MeshStandardMaterial({ color: "#9fc4e8", emissive: "#ffc46b", emissiveIntensity: 0, roughness: 0.2 });
 const cloudMat = new THREE.MeshStandardMaterial({ color: "#ffffff", transparent: true, opacity: 0.6, roughness: 1, flatShading: true });
 const ringMat = new THREE.MeshBasicMaterial({ toneMapped: false, transparent: true, opacity: 0 });
@@ -109,6 +111,11 @@ function Director() {
     const aspect = size.width / size.height;
     const pull = 1.42 * (aspect >= 1.5 ? 1 : 1 + (1.5 - aspect) * 1.05);
     tmp.pos.sub(tmp.look).multiplyScalar(pull).add(tmp.look);
+    // The camera leans towards the pointer, which gives the block real depth on desktop.
+    pointer.easedX += (pointer.x - pointer.easedX) * 0.04;
+    pointer.easedY += (pointer.y - pointer.easedY) * 0.04;
+    tmp.pos.x += pointer.easedX * 2.4;
+    tmp.pos.y -= pointer.easedY * 1.2;
     // A little hand-held drift so stills never look frozen.
     tmp.pos.x += Math.sin(clock.elapsedTime * 0.25) * 0.25;
     tmp.pos.y += Math.sin(clock.elapsedTime * 0.19) * 0.12;
@@ -743,6 +750,16 @@ function Grade() {
 
 /** The scroll-driven hero film. `active` pauses rendering once the hero is off screen. */
 export default function StoryScene({ active = true }: { active?: boolean }) {
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
+      pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+      pointer.y = (e.clientY / window.innerHeight) * 2 - 1;
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
+  }, []);
+
   return (
     <Canvas
       flat

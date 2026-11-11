@@ -25,6 +25,17 @@ export function ImageBand({ image, title, text, link, rotating }: ImageBandProps
     () => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Explicit four-value insets: browsers shorten computed clip-paths, which would skew the tween.
+        gsap.fromTo(
+          ref.current,
+          { clipPath: "inset(10% 5% 0% 5% round 28px)" },
+          { clipPath: "inset(0% 0% 0% 0% round 0px)", ease: "none", scrollTrigger: { trigger: ref.current, start: "top bottom", end: "top 25%", scrub: 0.8 } },
+        );
+        gsap.fromTo(
+          "[data-band-copy]",
+          { y: 90 },
+          { y: 0, ease: "none", scrollTrigger: { trigger: ref.current, start: "top bottom", end: "top 10%", scrub: 0.8 } },
+        );
         gsap.fromTo(
           "[data-band-img]",
           { scale: 1.3, yPercent: -6 },
@@ -52,7 +63,7 @@ export function ImageBand({ image, title, text, link, rotating }: ImageBandProps
       )}
 
       {(title || text || link) && (
-        <div className="absolute inset-x-0 bottom-0 grid gap-6 p-6 md:grid-cols-[1fr_auto] md:items-end md:p-10">
+        <div data-band-copy className="absolute inset-x-0 bottom-0 grid gap-6 p-6 will-change-transform md:grid-cols-[1fr_auto] md:items-end md:p-10">
           <div>
             {title && (
               <SplitReveal as="h2" className="max-w-4xl text-[clamp(2rem,4.2vw,4rem)] leading-[1.08]">
