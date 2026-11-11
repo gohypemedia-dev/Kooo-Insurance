@@ -1,0 +1,53 @@
+VEHICLE MODEL SOURCES AND LICENCES
+==================================
+
+Both models are licensed CC BY 4.0, which allows commercial use. You must credit
+the author somewhere on the site, for example in a credits or legal page, or in
+the page footer.
+
+Licence text: https://creativecommons.org/licenses/by/4.0/
+Licences checked on 2026-11-11 with the public Sketchfab API (api.sketchfab.com/v3/models/<uid>).
+Both returned license.slug = "by" ("Author must be credited. Commercial use is allowed.").
+
+Where the files came from: the Objaverse 1.0 dataset on Hugging Face
+(https://huggingface.co/datasets/allenai/objaverse). It holds copies of these
+Sketchfab uploads, under the licence each author chose, and they can be
+downloaded without logging in.
+
+----------------------------------------------------------------------
+truck.glb
+----------------------------------------------------------------------
+Title   : "Truck"
+Author  : ROY (Sketchfab user roy.gearloft.in, profile https://sketchfab.com/roy.3dartist)
+URL     : https://sketchfab.com/3d-models/truck-eda924f23ba04cd5b1e5160abf2320fa
+UID     : eda924f23ba04cd5b1e5160abf2320fa
+Licence : CC BY 4.0 (Creative Commons Attribution 4.0 International)
+Changes : uniformly scaled to 0.85 so the box width is about 2.42 m, transforms
+          baked in, grounded and centred, nodes and materials renamed, wheel
+          pivot groups added, window glass changed from opaque white to dark
+          tinted, original Sketchfab wheel animation removed, deduplicated,
+          compressed with meshopt.
+Badges  : no manufacturer logo or text found in the model.
+
+Suggested credit:
+  "Truck" by ROY (https://sketchfab.com/roy.3dartist), licensed under CC BY 4.0
+  (https://creativecommons.org/licenses/by/4.0/). Modified.
+
+----------------------------------------------------------------------
+ute.glb
+----------------------------------------------------------------------
+Title   : "Hilux-like pick-up truck"
+Author  : matisosanimation (https://sketchfab.com/matisosanimation)
+URL     : https://sketchfab.com/3d-models/hilux-like-pick-up-truck-501c2fa5bd1a4ecd822365fa7daa8019
+UID     : 501c2fa5bd1a4ecd822365fa7daa8019
+Licence : CC BY 4.0 (Creative Commons Attribution 4.0 International)
+Changes : uniformly scaled to 0.88, rotated +90 degrees about Y so the front
+          faces +Z, transforms baked in, grounded and centred, merged tyre and
+          rim meshes split into 4 wheel pivot groups, nodes and materials
+          renamed, deduplicated, compressed with meshopt.
+Badges  : no manufacturer logo or text found in the model (a generic design
+          "inspired by" the Hilux, no Toyota badge modelled).
+
+Suggested credit:
+  "Hilux-like pick-up truck" by matisosanimation (https://sketchfab.com/matisosanimation),
+  licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified.

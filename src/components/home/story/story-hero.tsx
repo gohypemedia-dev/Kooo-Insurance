@@ -109,6 +109,11 @@ export function StoryHero() {
         <div aria-hidden className="absolute inset-0">
           <StoryScene active={active} />
         </div>
+        {/* By day, a soft wash of sky behind the captions so navy text reads over the landscape. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#e3eaf1] via-[#e3eaf1]/75 to-transparent transition-opacity duration-700 group-data-[tone=dark]/stage:opacity-0 md:bg-gradient-to-r md:from-[#e3eaf1] md:via-[#e3eaf1]/80 md:via-35% md:to-transparent md:to-60%"
+        />
         {/* Soft shade behind the captions so they read over any frame of the film. */}
         <div
           aria-hidden

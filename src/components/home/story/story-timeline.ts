@@ -84,10 +84,11 @@ export const chapters = [
 /** True while the sky is light enough that text over it should be navy. */
 export const isLightSky = (p: number) => p < 0.125 || p > 0.9;
 
-export const SKY_START = "#f6e7cf";
+/** A soft, real daylight sky (the page behind the film starts this colour too). */
+export const SKY_START = "#e3eaf1";
 export const skyKeys = colorKeys([
   [0, SKY_START],
-  [0.1, "#f1dcc0"],
+  [0.1, "#dbe3ec"],
   [0.19, "#0c1830"],
   [0.33, "#0a1326"],
   [0.42, "#1d1320"],

@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
+import { Environment, RoundedBox, useGLTF } from "@react-three/drei";
+import { Bloom, EffectComposer, SMAA, ToneMapping, Vignette } from "@react-three/postprocessing";
+import { ToneMappingMode } from "postprocessing";
 import * as THREE from "three";
+import { useSurface, worldBox, worldPlane } from "./scene-assets";
 import { clamp01, colorKeys, colorTrack, cues, skyKeys, story, track } from "./story-timeline";
 
 /* Brand palette. Values above 1 glow through the bloom pass. */
@@ -23,8 +26,10 @@ const tmp = { pos: new THREE.Vector3(), look: new THREE.Vector3(), sky: new THRE
 const dummy = new THREE.Object3D();
 /** Pointer position across the window (-1 to 1), and the eased value the camera follows. */
 const pointer = { x: 0, y: 0, easedX: 0, easedY: 0 };
-const windowMat = new THREE.MeshStandardMaterial({ color: "#9fc4e8", emissive: "#ffc46b", emissiveIntensity: 0, roughness: 0.2 });
-const cloudMat = new THREE.MeshStandardMaterial({ color: "#ffffff", transparent: true, opacity: 0.6, roughness: 1, flatShading: true });
+const windowMat = new THREE.MeshPhysicalMaterial({ color: "#2a3d55", emissive: "#ffc46b", emissiveIntensity: 0, roughness: 0.05, metalness: 0.3, clearcoat: 1 });
+const cloudMat = new THREE.MeshStandardMaterial({ color: "#ffffff", transparent: true, opacity: 0.6, roughness: 1 });
+/* Physically based materials shared across the buildings. */
+const chromeMat = new THREE.MeshStandardMaterial({ color: "#dfe4ea", roughness: 0.15, metalness: 1 });
 const ringMat = new THREE.MeshBasicMaterial({ toneMapped: false, transparent: true, opacity: 0 });
 
 const sunColors = colorKeys([
@@ -34,7 +39,9 @@ const sunColors = colorKeys([
   [0.8, "#bfe9d8"],
   [0.93, "#fff3e0"],
 ]);
-const SUN_INTENSITY = [[0, 2.5], [0.1, 2.1], [0.19, 0.3], [0.52, 0.22], [0.6, 0.5], [0.8, 0.8], [0.93, 2.7], [1, 2.7]] as const;
+const SUN_INTENSITY = [[0, 3.1], [0.1, 2.6], [0.19, 0.3], [0.52, 0.22], [0.6, 0.5], [0.8, 0.8], [0.93, 3.2], [1, 3.2]] as const;
+/** Soft studio-style reflections: full by day, faint at night. */
+const ENV_INTENSITY = [[0, 0.9], [0.19, 0.18], [0.52, 0.15], [0.6, 0.3], [0.8, 0.45], [0.93, 1], [1, 1]] as const;
 const HEMI_INTENSITY = [[0, 1.25], [0.19, 0.5], [0.52, 0.42], [0.6, 0.7], [0.8, 0.9], [0.93, 1.35], [1, 1.35]] as const;
 
 /** Camera move: [time, position, look-at]. One continuous dolly around the block. */
@@ -48,6 +55,27 @@ const SHOTS: [number, [number, number, number], [number, number, number]][] = [
   [0.86, [10, 9, 23], [0, 2, 0]],
   [1, [15, 8, 21], [0, 1.8, 0]],
 ];
+
+/** Photo-scanned models (Poly Haven, CC0), meshopt-compressed in /public/models. */
+function useModel(name: string, paint?: Record<string, string>) {
+  const { scene } = useGLTF(`/models/${name}.glb`, false, true);
+  return useMemo(() => {
+    const copy = scene.clone(true);
+    copy.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      const mat = mesh.material as THREE.MeshStandardMaterial;
+      const colour = paint?.[mat.name];
+      if (colour) {
+        // Repaint in Kooo colours with a glossy clear-coat finish.
+        mesh.material = new THREE.MeshPhysicalMaterial({ color: colour, roughness: 0.3, metalness: 0.4, clearcoat: 1, clearcoatRoughness: 0.06 });
+      }
+    });
+    return copy;
+  }, [scene, paint]);
+}
 
 /** Deterministic pseudo-random numbers, so the film looks the same on every visit. */
 function seeded(seed: number) {
@@ -97,6 +125,7 @@ function Director() {
       hemi.current.intensity = track(p, HEMI_INTENSITY);
       hemi.current.color.copy(tmp.sky).lerp(WHITE, 0.45);
     }
+    scene.environmentIntensity = track(p, ENV_INTENSITY);
     if (bolt.current) bolt.current.intensity = c.flash * (4 + 3 * Math.sin(clock.elapsedTime * 70));
 
     // Map the playhead onto the camera path (shots are not evenly spaced in time).
@@ -136,12 +165,16 @@ function Director() {
         ref={sun}
         position={[11, 15, 9]}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[4096, 4096]}
         shadow-bias={-0.0004}
         shadow-normalBias={0.04}
       >
         <orthographicCamera attach="shadow-camera" args={[-18, 18, 18, -18, 1, 50]} />
       </directionalLight>
+      {/* Real outdoor light, captured from a photographed sky (Poly Haven HDRI), for reflections and fill. */}
+      <Suspense fallback={null}>
+        <Environment files="/hdri/day.hdr" />
+      </Suspense>
       <directionalLight ref={bolt} position={[-6, 20, -4]} color="#dfe8ff" intensity={0} />
     </>
   );
@@ -149,26 +182,55 @@ function Director() {
 
 /** The plinth the whole block sits on, with its road. */
 function Ground() {
+  const grass = useSurface("grass");
+  const asphalt = useSurface("asphalt");
+  const concrete = useSurface("concrete");
+  const geo = useMemo(
+    () => ({
+      field: worldPlane(220, 220),
+      road: worldPlane(220, 3.6),
+      path: worldPlane(220, 1.5),
+      forecourt: worldPlane(21, 4.6),
+      kerb: worldBox(220, 0.14, 0.3),
+      kerbFar: worldBox(220, 0.14, 0.3),
+    }),
+    [],
+  );
   return (
     <group>
-      <mesh position={[0, -0.7, 0]} receiveShadow>
-        <cylinderGeometry args={[14, 14, 1.4, 96]} />
-        <meshStandardMaterial color="#efe9dc" roughness={0.95} />
+      {/* Lawn that runs out to the horizon, where the fog takes over */}
+      <mesh geometry={geo.field} receiveShadow>
+        <meshStandardMaterial {...grass} color="#a3b78f" roughness={1} />
       </mesh>
-      <mesh position={[0, 0.011, 6.5]} receiveShadow>
-        <boxGeometry args={[22.4, 0.02, 3.6]} />
-        <meshStandardMaterial color="#3b4452" roughness={0.9} />
+      {/* Concrete forecourt in front of the buildings, and the footpath */}
+      <mesh geometry={geo.forecourt} position={[0, 0.012, 1.9]} receiveShadow>
+        <meshStandardMaterial {...concrete} color="#f2efe8" />
       </mesh>
-      {[-9, -6, -3, 0, 3, 6, 9].map((x) => (
-        <mesh key={x} position={[x, 0.025, 6.5]}>
-          <boxGeometry args={[1.2, 0.01, 0.12]} />
-          <meshStandardMaterial color="#f4efe3" />
+      <mesh geometry={geo.path} position={[0, 0.014, 4.6 - 0.8]} receiveShadow>
+        <meshStandardMaterial {...concrete} color="#ece8df" />
+      </mesh>
+      {/* Road */}
+      <mesh geometry={geo.road} position={[0, 0.016, 6.5]} receiveShadow>
+        <meshStandardMaterial {...asphalt} color="#c9ccd2" />
+      </mesh>
+      {Array.from({ length: 25 }, (_, i) => -72 + i * 6).map((x) => (
+        <mesh key={x} position={[x, 0.024, 6.5]}>
+          <boxGeometry args={[2.4, 0.004, 0.12]} />
+          <meshStandardMaterial color="#f1efe8" roughness={0.6} />
         </mesh>
       ))}
-      {/* Kerb */}
-      <mesh position={[0, 0.06, 4.55]} receiveShadow castShadow>
-        <boxGeometry args={[23.6, 0.12, 0.3]} />
-        <meshStandardMaterial color="#cfc8b8" />
+      {[4.85, 8.15].map((z) => (
+        <mesh key={z} position={[0, 0.022, z]}>
+          <boxGeometry args={[220, 0.004, 0.1]} />
+          <meshStandardMaterial color="#efeadf" roughness={0.6} />
+        </mesh>
+      ))}
+      {/* Kerbs on both sides */}
+      <mesh geometry={geo.kerb} position={[0, 0.07, 4.62]} receiveShadow castShadow>
+        <meshStandardMaterial {...concrete} color="#e3ded3" />
+      </mesh>
+      <mesh geometry={geo.kerbFar} position={[0, 0.07, 8.45]} receiveShadow>
+        <meshStandardMaterial {...concrete} color="#e3ded3" />
       </mesh>
     </group>
   );
@@ -194,7 +256,11 @@ function Warehouse() {
   const debris = useRef<THREE.Group>(null);
   const fireLight = useRef<THREE.PointLight>(null);
 
-  const base = useMemo(() => ({ wall: new THREE.Color(CREAM), band: new THREE.Color(GREEN), roof: new THREE.Color(NAVY) }), []);
+  const iron = useSurface("corrugated");
+  const ironRoof = useSurface("corrugated");
+  const geo = useMemo(() => ({ walls: worldBox(W, H, D) }), [W, H, D]);
+  // Paint colours over the real corrugated iron; the fire chars them.
+  const base = useMemo(() => ({ wall: new THREE.Color("#f4f1ea"), band: new THREE.Color(GREEN), roof: new THREE.Color("#5f7398") }), []);
   const gableGeo = useMemo(() => {
     const shape = new THREE.Shape();
     shape.moveTo(-D / 2, 0);
@@ -244,51 +310,83 @@ function Warehouse() {
 
   return (
     <group position={[-3.6, 0, -2.4]}>
-      <mesh position={[0, H / 2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[W, H, D]} />
-        <meshStandardMaterial ref={wall} color={CREAM} roughness={0.9} />
+      <mesh geometry={geo.walls} position={[0, H / 2, 0]} castShadow receiveShadow>
+        <meshStandardMaterial ref={wall} {...iron} color="#f4f1ea" metalness={0.35} />
       </mesh>
-      <mesh position={[0, H - 0.3, 0]}>
-        <boxGeometry args={[W + 0.06, 0.4, D + 0.06]} />
-        <meshStandardMaterial ref={band} color={GREEN} roughness={0.7} />
+      {/* Plinth course along the base of the walls */}
+      <RoundedBox args={[W + 0.08, 0.35, D + 0.08]} radius={0.05} smoothness={3} position={[0, 0.17, 0]} receiveShadow>
+        <meshStandardMaterial color="#d9d2c2" roughness={0.9} />
+      </RoundedBox>
+      <RoundedBox args={[W + 0.08, 0.4, D + 0.08]} radius={0.06} smoothness={3} position={[0, H - 0.3, 0]}>
+        <meshStandardMaterial ref={band} color={GREEN} roughness={0.45} />
+      </RoundedBox>
+      {/* Gutter and downpipes */}
+      <mesh position={[0, H + 0.02, D / 2 + 0.22]} rotation-z={Math.PI / 2} castShadow>
+        <cylinderGeometry args={[0.07, 0.07, W + 0.6, 16]} />
+        <meshStandardMaterial color="#e8e6e0" roughness={0.4} metalness={0.4} />
       </mesh>
+      {[-W / 2 + 0.25, W / 2 - 0.25].map((x) => (
+        <mesh key={x} position={[x, H / 2, D / 2 + 0.16]} castShadow>
+          <cylinderGeometry args={[0.05, 0.05, H, 12]} />
+          <meshStandardMaterial color="#e8e6e0" roughness={0.4} metalness={0.4} />
+        </mesh>
+      ))}
       <mesh ref={gable} geometry={gableGeo} position={[-W / 2, H, 0]} rotation={[0, Math.PI / 2, 0]} castShadow>
         <meshStandardMaterial color={CREAM} roughness={0.9} />
       </mesh>
-      <mesh ref={front} position={[0, H + rise, D / 4]} rotation={[A, 0, 0]} castShadow receiveShadow>
-        <boxGeometry args={[W + 0.7, 0.2, slab]} />
-        <meshStandardMaterial ref={roof} color={NAVY} roughness={0.6} />
-      </mesh>
-      <mesh ref={back} position={[0, H + rise, -D / 4]} rotation={[-A, 0, 0]} castShadow>
-        <boxGeometry args={[W + 0.7, 0.2, slab]} />
-        <meshStandardMaterial color={NAVY} roughness={0.6} />
-      </mesh>
+      <RoundedBox ref={front} args={[W + 0.7, 0.2, slab]} radius={0.07} smoothness={3} position={[0, H + rise, D / 4]} rotation={[A, 0, 0]} castShadow receiveShadow>
+        <meshStandardMaterial ref={roof} {...ironRoof} color="#5f7398" metalness={0.45} />
+      </RoundedBox>
+      <RoundedBox ref={back} args={[W + 0.7, 0.2, slab]} radius={0.07} smoothness={3} position={[0, H + rise, -D / 4]} rotation={[-A, 0, 0]} castShadow>
+        <meshStandardMaterial {...ironRoof} color="#5f7398" metalness={0.45} />
+      </RoundedBox>
 
       {/* Roller door, with the fire showing behind it */}
-      <mesh position={[-1.7, 1.35, D / 2 + 0.02]}>
-        <boxGeometry args={[3.2, 2.7, 0.08]} />
-        <meshStandardMaterial color="#16305f" roughness={0.5} />
+      <RoundedBox args={[3.4, 2.9, 0.1]} radius={0.04} smoothness={2} position={[-1.7, 1.45, D / 2 + 0.01]}>
+        <meshStandardMaterial color="#d8d2c4" roughness={0.6} />
+      </RoundedBox>
+      <mesh position={[-1.7, 1.35, D / 2 + 0.04]}>
+        <boxGeometry args={[3.2, 2.7, 0.06]} />
+        <meshStandardMaterial color="#1a3666" roughness={0.38} metalness={0.45} />
       </mesh>
+      {/* Roller door slats */}
+      {Array.from({ length: 13 }, (_, i) => (
+        <mesh key={i} position={[-1.7, 0.1 + i * 0.205, D / 2 + 0.075]}>
+          <boxGeometry args={[3.18, 0.025, 0.02]} />
+          <meshStandardMaterial color="#10264d" roughness={0.5} metalness={0.4} />
+        </mesh>
+      ))}
       <mesh position={[-1.7, 1.35, D / 2 + 0.07]}>
         <planeGeometry args={[2.9, 2.4]} />
         <meshBasicMaterial ref={glow} color="#000000" toneMapped={false} transparent blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
       {[1.1, 2.4].map((x) => (
-        <mesh key={x} position={[x, 1.9, D / 2 + 0.02]} material={windowMat}>
-          <boxGeometry args={[0.95, 0.85, 0.08]} />
-        </mesh>
+        <group key={x} position={[x, 1.9, D / 2]}>
+          <RoundedBox args={[1.1, 1, 0.1]} radius={0.03} smoothness={2}>
+            <meshStandardMaterial color="#f2f0ea" roughness={0.5} />
+          </RoundedBox>
+          <mesh position={[0, 0, 0.04]} material={windowMat}>
+            <boxGeometry args={[0.92, 0.82, 0.04]} />
+          </mesh>
+          <mesh position={[0, 0, 0.07]}>
+            <boxGeometry args={[0.03, 0.82, 0.02]} />
+            <meshStandardMaterial color="#f2f0ea" roughness={0.5} />
+          </mesh>
+          <mesh position={[0, -0.52, 0.08]}>
+            <boxGeometry args={[1.2, 0.06, 0.16]} />
+            <meshStandardMaterial color="#e2ddd1" roughness={0.7} />
+          </mesh>
+        </group>
       ))}
-      <mesh ref={sign} position={[1.75, H - 0.55, D / 2 + 0.1]}>
-        <boxGeometry args={[2.5, 0.5, 0.1]} />
-        <meshStandardMaterial color={NAVY} roughness={0.5} />
-      </mesh>
+      <RoundedBox ref={sign} args={[2.5, 0.5, 0.1]} radius={0.04} smoothness={3} position={[1.75, H - 0.55, D / 2 + 0.1]}>
+        <meshStandardMaterial color={NAVY} roughness={0.35} metalness={0.3} />
+      </RoundedBox>
 
       <group ref={debris} scale={0}>
         {rubble.map((r, i) => (
-          <mesh key={i} position={r.pos} rotation={[0, r.rot, 0.2]} castShadow>
-            <boxGeometry args={r.size} />
+          <RoundedBox key={i} args={r.size} radius={0.04} smoothness={2} position={r.pos} rotation={[0, r.rot, 0.2]} castShadow>
             <meshStandardMaterial color="#2a2623" roughness={1} />
-          </mesh>
+          </RoundedBox>
         ))}
       </group>
 
@@ -298,131 +396,97 @@ function Warehouse() {
 }
 
 function Shop() {
-  const glass = useRef<THREE.MeshStandardMaterial>(null);
+  const render = useSurface("render");
+  const walls = useMemo(() => worldBox(5, 3, 4.4), []);
+  const glass = useRef<THREE.MeshPhysicalMaterial>(null);
   useFrame(() => {
     const c = cues(story.p);
     if (glass.current) glass.current.emissiveIntensity = c.dark * 1.3;
   });
   return (
     <group position={[4.6, 0, -3.3]}>
-      <mesh position={[0, 1.5, 0]} castShadow receiveShadow>
-        <boxGeometry args={[5, 3, 4.4]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.9} />
+      <mesh geometry={walls} position={[0, 1.5, 0]} castShadow receiveShadow>
+        <meshStandardMaterial {...render} color="#ffffff" />
       </mesh>
-      <mesh position={[0, 3.1, 0]} castShadow>
-        <boxGeometry args={[5.4, 0.25, 4.8]} />
-        <meshStandardMaterial color={NAVY} roughness={0.6} />
+      <RoundedBox args={[5.4, 0.25, 4.8]} radius={0.08} smoothness={3} position={[0, 3.1, 0]} castShadow>
+        <meshStandardMaterial color={NAVY} roughness={0.4} metalness={0.25} />
+      </RoundedBox>
+      <RoundedBox args={[4.6, 0.5, 0.1]} radius={0.04} smoothness={3} position={[0, 2.55, 2.22]}>
+        <meshStandardMaterial color={MINT} roughness={0.5} />
+      </RoundedBox>
+      {/* Striped awning */}
+      <group position={[0, 2.15, 2.85]} rotation={[0.32, 0, 0]}>
+        {Array.from({ length: 9 }, (_, i) => (
+          <RoundedBox key={i} args={[0.565, 0.08, 1.4]} radius={0.03} smoothness={2} position={[-2.26 + i * 0.565, 0, 0]} castShadow>
+            <meshStandardMaterial color={i % 2 ? "#f7f7f4" : GREEN} roughness={0.6} />
+          </RoundedBox>
+        ))}
+      </group>
+      {/* Shopfront: frame, glass and door */}
+      <RoundedBox args={[2.7, 1.7, 0.08]} radius={0.03} smoothness={2} position={[-0.9, 1.05, 2.2]}>
+        <meshStandardMaterial color="#2b3443" roughness={0.4} metalness={0.6} />
+      </RoundedBox>
+      <mesh position={[-0.9, 1.05, 2.25]}>
+        <boxGeometry args={[2.5, 1.5, 0.04]} />
+        <meshPhysicalMaterial ref={glass} color="#2a3d55" emissive="#ffd08a" emissiveIntensity={0} roughness={0.04} metalness={0.3} clearcoat={1} />
       </mesh>
-      <mesh position={[0, 2.55, 2.22]}>
-        <boxGeometry args={[4.6, 0.5, 0.1]} />
-        <meshStandardMaterial color={MINT} roughness={0.7} />
-      </mesh>
-      <mesh position={[0, 2.15, 2.85]} rotation={[0.32, 0, 0]} castShadow>
-        <boxGeometry args={[5.1, 0.1, 1.4]} />
-        <meshStandardMaterial color={GREEN} roughness={0.7} />
-      </mesh>
-      <mesh position={[-0.9, 1.05, 2.22]}>
-        <boxGeometry args={[2.5, 1.5, 0.08]} />
-        <meshStandardMaterial ref={glass} color="#a9cdea" emissive="#ffd08a" emissiveIntensity={0} roughness={0.15} />
-      </mesh>
-      <mesh position={[1.5, 0.95, 2.22]}>
-        <boxGeometry args={[0.95, 1.9, 0.08]} />
-        <meshStandardMaterial color={NAVY} roughness={0.5} />
+      <RoundedBox args={[0.95, 1.9, 0.08]} radius={0.03} smoothness={2} position={[1.5, 0.95, 2.22]}>
+        <meshStandardMaterial color={NAVY} roughness={0.35} metalness={0.3} />
+      </RoundedBox>
+      <mesh position={[1.82, 0.95, 2.29]} material={chromeMat}>
+        <boxGeometry args={[0.05, 0.4, 0.04]} />
       </mesh>
     </group>
   );
 }
 
-function Wheel({ position }: { position: [number, number, number] }) {
-  return (
-    <mesh position={position} rotation={[Math.PI / 2, 0, 0]} castShadow>
-      <cylinderGeometry args={[0.42, 0.42, 0.3, 20]} />
-      <meshStandardMaterial color="#1b1d22" roughness={0.9} />
-    </mesh>
-  );
-}
 
 /** Delivery truck: pulls in during the opening and parks on the forecourt. */
+/** Kooo colours for the delivery truck (model: "Truck" by ROY, CC BY 4.0). */
+const TRUCK_PAINT = { Cab_Paint: NAVY, Box_Paint: "#f4f4f1" };
+
 function Truck() {
   const ref = useRef<THREE.Group>(null);
+  const truck = useModel("truck", TRUCK_PAINT);
   useFrame(() => {
     const c = cues(story.p);
     if (ref.current) ref.current.position.x = -12.5 + c.drive * 8;
   });
   return (
     <group ref={ref} position={[-12.5, 0, 2.7]}>
-      <mesh position={[0, 0.55, 0]} castShadow>
-        <boxGeometry args={[5.2, 0.25, 1.5]} />
-        <meshStandardMaterial color="#20242b" />
-      </mesh>
-      <mesh position={[-0.6, 1.65, 0]} castShadow receiveShadow>
-        <boxGeometry args={[3.7, 2, 1.8]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.8} />
-      </mesh>
-      <mesh position={[-0.6, 1.25, 0]}>
-        <boxGeometry args={[3.72, 0.3, 1.82]} />
-        <meshStandardMaterial color={GREEN} roughness={0.6} />
-      </mesh>
-      <mesh position={[2, 1.3, 0]} castShadow>
-        <boxGeometry args={[1.3, 1.4, 1.7]} />
-        <meshStandardMaterial color={NAVY} roughness={0.5} />
-      </mesh>
-      <mesh position={[2.3, 1.6, 0]}>
-        <boxGeometry args={[0.75, 0.6, 1.72]} />
-        <meshStandardMaterial color="#a9cdea" roughness={0.15} />
-      </mesh>
-      {[-1.9, -0.9, 1.9].flatMap((x) => [0.8, -0.8].map((z) => <Wheel key={`${x}${z}`} position={[x, 0.42, z]} />))}
+      {/* The model faces +Z; turn it to drive along the road (+X). */}
+      <primitive object={truck} rotation-y={Math.PI / 2} scale={0.6} />
     </group>
   );
 }
 
 /** The ute parked under the tree. */
+/** Kooo green for the ute (model: "Hilux-like pick-up truck" by matisosanimation, CC BY 4.0). */
+const UTE_PAINT = { Paint: "#11a874" };
+
 function Ute() {
-  const cabin = useRef<THREE.Group>(null);
   const body = useRef<THREE.Group>(null);
+  const ute = useModel("ute", UTE_PAINT);
   useFrame(() => {
     const c = cues(story.p);
-    if (cabin.current) cabin.current.scale.y = 1 - c.crush * 0.55;
-    if (body.current) body.current.rotation.x = c.crush * 0.06;
+    if (!body.current) return;
+    // The fallen tree crushes the cabin: the body sags and tips forward.
+    body.current.scale.set(1, 1 - c.crush * 0.28, 1);
+    body.current.rotation.z = -c.crush * 0.05;
   });
   return (
-    <group ref={body} position={[4.3, 0, 1.7]} rotation={[0, -0.25, 0]}>
-      <mesh position={[0, 0.72, 0]} castShadow>
-        <boxGeometry args={[3.3, 0.6, 1.5]} />
-        <meshStandardMaterial color={GREEN} roughness={0.5} />
-      </mesh>
-      <group ref={cabin} position={[0.35, 1.02, 0]}>
-        <mesh position={[0, 0.3, 0]} castShadow>
-          <boxGeometry args={[1.3, 0.6, 1.4]} />
-          <meshStandardMaterial color="#12b57c" roughness={0.5} />
-        </mesh>
-        <mesh position={[0, 0.32, 0]}>
-          <boxGeometry args={[1.34, 0.4, 1.42]} />
-          <meshStandardMaterial color="#a9cdea" roughness={0.15} />
-        </mesh>
+    <group position={[5.1, 0, 1.75]} rotation={[0, -0.25, 0]}>
+      <group ref={body}>
+        <primitive object={ute} rotation-y={Math.PI / 2} scale={0.74} />
       </group>
-      {[-1.05, 1.05].flatMap((x) => [0.72, -0.72].map((z) => <Wheel key={`${x}${z}`} position={[x, 0.42, z]} />))}
     </group>
   );
 }
 
 function TreeShape({ dark = false }: { dark?: boolean }) {
-  return (
-    <>
-      <mesh position={[0, 1.1, 0]} castShadow>
-        <cylinderGeometry args={[0.16, 0.22, 2.2, 8]} />
-        <meshStandardMaterial color="#6d4b3a" roughness={1} />
-      </mesh>
-      <mesh position={[0, 3, 0]} castShadow>
-        <icosahedronGeometry args={[1.45, 1]} />
-        <meshStandardMaterial color={dark ? "#1f7a5c" : "#2f9e77"} roughness={0.9} flatShading />
-      </mesh>
-      <mesh position={[0.25, 4.15, 0.1]} castShadow>
-        <icosahedronGeometry args={[0.95, 1]} />
-        <meshStandardMaterial color={dark ? "#27906b" : "#3bb489"} roughness={0.9} flatShading />
-      </mesh>
-    </>
-  );
+  // A slender gum (tree-a, 4.6 m as modelled) or a broad shade tree (tree-b, a 19.5 m jacaranda).
+  const model = useModel(dark ? "tree-b" : "tree-a");
+  return <primitive object={model} scale={dark ? 0.28 : 1.2} />;
 }
 
 /** The tree that comes down in the storm, and the young one planted in its place. */
@@ -451,6 +515,7 @@ function FallingTree() {
 }
 
 function Lamp({ position }: { position: [number, number, number] }) {
+  const pole = useModel("street-lamp");
   const bulb = useRef<THREE.MeshBasicMaterial>(null);
   const light = useRef<THREE.PointLight>(null);
   useFrame(() => {
@@ -461,41 +526,38 @@ function Lamp({ position }: { position: [number, number, number] }) {
   });
   return (
     <group position={position}>
-      <mesh position={[0, 1.7, 0]} castShadow>
-        <cylinderGeometry args={[0.05, 0.07, 3.4, 8]} />
-        <meshStandardMaterial color="#2a303a" />
-      </mesh>
-      <mesh position={[0, 3.4, 0.35]}>
-        <boxGeometry args={[0.1, 0.08, 0.8]} />
-        <meshStandardMaterial color="#2a303a" />
-      </mesh>
-      <mesh position={[0, 3.3, 0.7]}>
-        <sphereGeometry args={[0.14, 12, 12]} />
+      <primitive object={pole} />
+      {/* The glow inside the lantern at night */}
+      <mesh position={[0, 3.45, 0]}>
+        <sphereGeometry args={[0.1, 24, 24]} />
         <meshBasicMaterial ref={bulb} toneMapped={false} />
       </mesh>
-      <pointLight ref={light} position={[0, 3.2, 0.7]} color="#ffc983" intensity={0} distance={11} decay={1.8} />
+      <pointLight ref={light} position={[0, 3.3, 0.3]} color="#ffc983" intensity={0} distance={11} decay={1.8} />
     </group>
   );
 }
 
 function Props() {
+  const boxes = [useModel("box"), useModel("box"), useModel("box"), useModel("box")];
+  const barrel = useModel("clutter");
+  const cabinet = useModel("utility-box");
   return (
     <group>
-      {/* Pallets of stock on the forecourt */}
-      {([[1.4, 0.4, 1.6, 0.8], [2.3, 0.4, 1.9, 0.8], [1.8, 1.15, 1.75, 0.7]] as const).map(([x, y, z, s], i) => (
-        <mesh key={i} position={[x, y, z]} rotation={[0, i * 0.3, 0]} castShadow receiveShadow>
-          <boxGeometry args={[s, s, s]} />
-          <meshStandardMaterial color="#c9a36b" roughness={0.9} />
-        </mesh>
-      ))}
-      {([[-10.2, -3.5, 1.1], [-8.6, -6.4, 0.85], [9.6, -5.2, 1], [0.6, -8.4, 1.15], [10.6, 0.2, 0.75]] as const).map(([x, z, s], i) => (
-        <group key={i} position={[x, 0, z]} scale={s}>
+      {/* Stock on the forecourt: stacked cartons and a drum */}
+      <primitive object={boxes[0]} position={[1.5, 0, 1.6]} rotation-y={0.2} scale={1.6} />
+      <primitive object={boxes[1]} position={[2.2, 0, 1.9]} rotation-y={-0.15} scale={1.6} />
+      <primitive object={boxes[2]} position={[1.8, 0.54, 1.75]} rotation-y={0.5} scale={1.5} />
+      <primitive object={boxes[3]} position={[2.9, 0, 1.4]} rotation-y={1.2} scale={1.4} />
+      <primitive object={barrel} position={[0.6, 0, 1.2]} />
+      <primitive object={cabinet} position={[7.4, 0, -0.9]} rotation-y={-Math.PI / 2} />
+      {([[-10.2, -3.5, 1.1], [-8.6, -6.4, 0.85], [9.6, -5.2, 1], [0.6, -8.4, 1.15], [10.6, 0.2, 0.75], [-13.5, 1.5, 0.9], [13.8, -2.5, 1]] as const).map(([x, z, s], i) => (
+        <group key={i} position={[x, 0, z]} scale={s} rotation-y={i * 1.3}>
           <TreeShape dark={i % 2 === 0} />
         </group>
       ))}
-      <Lamp position={[0.4, 0, 3.6]} />
-      <Lamp position={[-9.6, 0, 3.6]} />
-      <Lamp position={[9.4, 0, 3.6]} />
+      <Lamp position={[0.4, 0, 3.75]} />
+      <Lamp position={[-9.6, 0, 3.75]} />
+      <Lamp position={[9.4, 0, 3.75]} />
     </group>
   );
 }
@@ -515,7 +577,8 @@ function Clouds() {
   useFrame(({ clock }) => {
     const c = cues(story.p);
     cloudMat.color.copy(WHITE).lerp(STORM, c.dark);
-    cloudMat.opacity = 0.55 + c.dark * 0.4;
+    // Storm clouds only: a clear daytime sky has none.
+    cloudMat.opacity = c.dark * 0.92;
     if (group.current) {
       group.current.position.x = Math.sin(clock.elapsedTime * 0.05) * 2 - story.p * 3;
       // Clouds gather low for the storm and lift again at the end.
@@ -528,7 +591,7 @@ function Clouds() {
     <group ref={group}>
       {puffs.map((puff, i) => (
         <mesh key={i} position={puff.pos} scale={[puff.s * 1.5, puff.s * 0.7, puff.s]} material={cloudMat}>
-          <icosahedronGeometry args={[1, 2]} />
+          <icosahedronGeometry args={[1, 4]} />
         </mesh>
       ))}
     </group>
@@ -604,8 +667,8 @@ function Lightning() {
 
 /** Flames and smoke over the warehouse. */
 function Fire() {
-  const FLAMES = 260;
-  const SMOKE = 80;
+  const FLAMES = 560;
+  const SMOKE = 110;
   const flames = useRef<THREE.InstancedMesh>(null);
   const smoke = useRef<THREE.InstancedMesh>(null);
   const seeds = useMemo(() => {
@@ -640,8 +703,8 @@ function Fire() {
           const rise = ember ? s.height * 2.4 : s.height;
           dummy.position.set(s.x + Math.sin(t * 2 + s.wob) * 0.25 * life + life * 0.8, s.y + life * rise, s.z + Math.cos(t * 1.7 + s.wob) * 0.2);
           const grow = Math.min(1, life / 0.12);
-          const size = c.fire * s.size * grow * (1 - life) * (ember ? 0.16 : 0.95);
-          dummy.scale.set(size, size * (ember ? 1 : 1.9), size);
+          const size = c.fire * s.size * grow * (1 - life) * (ember ? 0.14 : 0.5);
+          dummy.scale.set(size, size * (ember ? 1 : 2.6), size); // tall, thin tongues of flame
           dummy.updateMatrix();
           f.setMatrixAt(i, dummy.matrix);
           f.setColorAt(i, tmp.color.copy(FIRE_HOT).lerp(FIRE_COOL, Math.min(1, life * 1.5)));
@@ -671,12 +734,12 @@ function Fire() {
   return (
     <group>
       <instancedMesh ref={flames} args={[undefined, undefined, FLAMES]} frustumCulled={false} visible={false}>
-        <icosahedronGeometry args={[0.5, 1]} />
-        <meshBasicMaterial toneMapped={false} transparent opacity={0.6} blending={THREE.AdditiveBlending} depthWrite={false} />
+        <icosahedronGeometry args={[0.5, 2]} />
+        <meshBasicMaterial toneMapped={false} transparent opacity={0.42} blending={THREE.AdditiveBlending} depthWrite={false} />
       </instancedMesh>
       <instancedMesh ref={smoke} args={[undefined, undefined, SMOKE]} frustumCulled={false} visible={false}>
         <icosahedronGeometry args={[0.6, 2]} />
-        <meshStandardMaterial color="#26262c" transparent opacity={0.42} depthWrite={false} roughness={1} />
+        <meshStandardMaterial color="#2b2b30" transparent opacity={0.2} depthWrite={false} roughness={1} />
       </instancedMesh>
     </group>
   );
@@ -741,9 +804,11 @@ function Grade() {
     if (vignette.current) vignette.current.darkness = cues(story.p).dark * 0.6;
   });
   return (
-    <EffectComposer multisampling={4}>
+    <EffectComposer multisampling={8}>
       <Bloom mipmapBlur intensity={0.6} luminanceThreshold={1} luminanceSmoothing={0.2} radius={0.75} />
       <Vignette ref={vignette as never} offset={0.25} darkness={0} />
+      <ToneMapping mode={ToneMappingMode.NEUTRAL} />
+      <SMAA />
     </EffectComposer>
   );
 }
@@ -764,19 +829,21 @@ export default function StoryScene({ active = true }: { active?: boolean }) {
     <Canvas
       flat
       shadows="soft"
-      dpr={[1, 1.75]}
-      camera={{ position: [17, 9, 22], fov: 30, near: 0.5, far: 140 }}
+      dpr={[1, 2]}
+      camera={{ position: [17, 9, 22], fov: 30, near: 0.5, far: 220 }}
       gl={{ antialias: false, powerPreference: "high-performance" }}
       frameloop={active ? "always" : "never"}
     >
       <Director />
-      <Ground />
-      <Warehouse />
-      <Shop />
-      <Truck />
-      <Ute />
-      <FallingTree />
-      <Props />
+      <Suspense fallback={null}>
+        <Ground />
+        <Warehouse />
+        <Shop />
+        <FallingTree />
+        <Props />
+        <Truck />
+        <Ute />
+      </Suspense>
       <Clouds />
       <Rain />
       <Lightning />

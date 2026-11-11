@@ -1,0 +1,13 @@
+3D models in this folder come from Poly Haven (https://polyhaven.com). They are licensed CC0 (public domain), so no attribution is required.
+Source: the 1k glTF downloads. Processed with gltf-transform 4.5.1: welded, deduplicated and pruned, with foliage thinned and meshes simplified (meshoptimizer), textures converted to WebP, and geometry compressed with EXT_meshopt_compression and KHR_mesh_quantization.
+Loading in three.js: GLTFLoader needs loader.setMeshoptDecoder(MeshoptDecoder) from three/examples/jsm/libs/meshopt_decoder.module.js.
+
+tree-a.glb       Tree Small 02 (slender gum-like tree)  https://polyhaven.com/a/tree_small_02
+tree-b.glb       Jacaranda Tree (full shade tree)        https://polyhaven.com/a/jacaranda_tree
+street-lamp.glb  Street Lamp 01                         https://polyhaven.com/a/street_lamp_01
+crate.glb        Wooden Crate 01                        https://polyhaven.com/a/wooden_crate_01
+box.glb          Cardboard Box 01                       https://polyhaven.com/a/cardboard_box_01
+hydrant.glb      Fire Hydrant (clean variant only)      https://polyhaven.com/a/fire_hydrant
+utility-box.glb  Utility Box 01                         https://polyhaven.com/a/utility_box_01
+fence.glb        Modular Chainlink Fence (full kit)     https://polyhaven.com/a/modular_chainlink_fence
+clutter.glb      Barrel 02 (blue plastic drum)          https://polyhaven.com/a/Barrel_02

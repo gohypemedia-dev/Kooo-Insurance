@@ -154,6 +154,12 @@ export function SiteFooter() {
               <p>All Rights Reserved | Kooo Insurance</p>
             </div>
             <p className="mt-4 text-xs leading-relaxed text-white/65 md:text-[13px]">{legal.copyright}</p>
+            {/* Required by the CC BY 4.0 licences of the 3D vehicles in the homepage film. */}
+            <p className="mt-3 text-[11px] leading-relaxed text-white/45">
+              3D models: <a href="https://sketchfab.com/3d-models/truck-eda924f23ba04cd5b1e5160abf2320fa" target="_blank" rel="noopener" className="underline hover:text-white/80">“Truck” by ROY</a> and{" "}
+              <a href="https://sketchfab.com/3d-models/hilux-like-pick-up-truck-501c2fa5bd1a4ecd822365fa7daa8019" target="_blank" rel="noopener" className="underline hover:text-white/80">“Hilux-like pick-up truck” by matisosanimation</a>, licensed{" "}
+              <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" className="underline hover:text-white/80">CC BY 4.0</a>, modified. Trees, props, textures and lighting from Poly Haven (CC0).
+            </p>
           </div>
         </div>
       </div>

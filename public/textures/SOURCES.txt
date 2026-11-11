@@ -1,0 +1,15 @@
+Texture & HDRI sources - all from Poly Haven (https://polyhaven.com), licensed CC0 (public domain).
+Credit is optional but appreciated. Maps downloaded at 1k (JPG) and re-encoded to 1024px JPEG q82.
+Normal maps are OpenGL convention (nor_gl). Real-world size = area one texture tile covers.
+
+Textures (public/textures/<slot>/diff.jpg, nor.jpg, rough.jpg)
+  asphalt    -> asphalt_pit_lane      2.0m x 2.0m   https://polyhaven.com/a/asphalt_pit_lane
+  concrete   -> granular_concrete     2.4m x 2.4m   https://polyhaven.com/a/granular_concrete
+  corrugated -> corrugated_iron_03    2.0m x 2.0m   https://polyhaven.com/a/corrugated_iron_03
+  render     -> beige_wall_001        3.0m x 3.0m   https://polyhaven.com/a/beige_wall_001
+  grass      -> leafy_grass           2.0m x 2.0m   https://polyhaven.com/a/leafy_grass
+  bark       -> bark_bluegum          1.82m x 1.82m https://polyhaven.com/a/bark_bluegum
+
+HDRIs (public/hdri/, 1k Radiance .hdr)
+  day.hdr    -> kloofendal_48d_partly_cloudy   https://polyhaven.com/a/kloofendal_48d_partly_cloudy
+  night.hdr  -> preller_drive                  https://polyhaven.com/a/preller_drive
