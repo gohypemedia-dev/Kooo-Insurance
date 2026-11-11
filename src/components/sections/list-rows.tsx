@@ -17,9 +17,30 @@ export function ListRows({ items }: { items: Row[] }) {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         gsap.utils.toArray<HTMLElement>("[data-row]").forEach((row) => {
-          const st = { trigger: row, start: "top 90%", once: true };
-          gsap.from(row.querySelector("[data-line]"), { scaleX: 0, duration: 1.2, ease: "power3.inOut", scrollTrigger: st });
-          gsap.from(row.querySelectorAll("[data-cell]"), { y: 30, opacity: 0, duration: 1, stagger: 0.08, ease: EASE_OUT, scrollTrigger: st });
+          // The hairline is drawn by the scroll itself; the content then rises in behind it.
+          gsap.fromTo(
+            row.querySelector("[data-line]"),
+            { scaleX: 0 },
+            { scaleX: 1, ease: "none", scrollTrigger: { trigger: row, start: "top 96%", end: "top 64%", scrub: 0.8 } },
+          );
+          gsap.from(row.querySelectorAll("[data-cell]"), {
+            y: 48,
+            opacity: 0,
+            duration: 1.1,
+            stagger: 0.12,
+            ease: EASE_OUT,
+            scrollTrigger: { trigger: row, start: "top 88%", once: true },
+          });
+        });
+      });
+      // Two-column layout only: the description drifts against its title for a little depth.
+      mm.add("(prefers-reduced-motion: no-preference) and (min-width: 768px)", () => {
+        gsap.utils.toArray<HTMLElement>("[data-row]").forEach((row) => {
+          gsap.fromTo(
+            row.querySelector("[data-drift]"),
+            { y: 14 },
+            { y: -14, ease: "none", scrollTrigger: { trigger: row, start: "top bottom", end: "bottom top", scrub: 0.8 } },
+          );
         });
       });
     },
@@ -42,9 +63,12 @@ export function ListRows({ items }: { items: Row[] }) {
               <span className="w-7 shrink-0 text-sm tabular-nums text-navy/80">{String(i + 1).padStart(2, "0")}</span>
               <h3 className="text-[1.6rem] leading-tight md:text-[2rem]">{item.title}</h3>
             </div>
-            <div data-cell className="relative flex items-start justify-between gap-6 pl-10 md:pl-0">
-              <p className="max-w-2xl text-[17px] leading-relaxed text-ink/85 md:text-lg">{item.description}</p>
-              {item.href && <ArrowBox className="hidden md:inline-flex" />}
+            <div data-cell className="relative pl-10 md:pl-0">
+              {/* Separate layer so the scrubbed drift never fights the reveal on the cell. */}
+              <div data-drift className="flex items-start justify-between gap-6">
+                <p className="max-w-2xl text-[17px] leading-relaxed text-ink/85 md:text-lg">{item.description}</p>
+                {item.href && <ArrowBox className="hidden md:inline-flex" />}
+              </div>
             </div>
           </>
         );

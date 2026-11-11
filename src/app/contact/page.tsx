@@ -71,7 +71,8 @@ export default function ContactPage() {
 
       <section className="relative z-10 px-6 pb-28 md:px-8 md:pb-36">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.5fr]">
-          <div>
+          {/* Stays pinned beside the taller column on desktop. */}
+          <div className="lg:sticky lg:top-32 lg:self-start">
             <SplitReveal as="h2" className="text-[clamp(2.25rem,4.4vw,4.25rem)] leading-[1.05]">
               {contactPage.formTitle}
             </SplitReveal>
@@ -86,7 +87,8 @@ export default function ContactPage() {
 
       <section className="relative z-10 px-6 pb-28 md:px-8 md:pb-36">
         <div className="grid gap-12 border-t border-navy/20 pt-12 lg:grid-cols-[1fr_1.5fr]">
-          <div>
+          {/* Stays pinned beside the taller column on desktop. */}
+          <div className="lg:sticky lg:top-32 lg:self-start">
             <SplitReveal as="h2" className="text-[clamp(2.25rem,4.4vw,4.25rem)] leading-[1.05]">
               Service areas
             </SplitReveal>

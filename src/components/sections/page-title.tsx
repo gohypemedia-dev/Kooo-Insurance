@@ -64,8 +64,23 @@ export function PageTitle({ words, intro }: PageTitleProps) {
     { dependencies: [ready], scope: ref },
   );
 
+  // Scroll depth: the two halves, the intro row and the marks leave at different speeds.
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        const scrollTrigger = { trigger: ref.current, start: "top top", end: "bottom top", scrub: 0.8 };
+        // Only `y` is scrubbed here, so it never fights the intro's `x` slide on the same halves.
+        gsap.utils.toArray<HTMLElement>("[data-depth]").forEach((layer) => {
+          gsap.fromTo(layer, { y: 0 }, { y: Number(layer.dataset.depth), ease: "none", scrollTrigger });
+        });
+      });
+    },
+    { scope: ref },
+  );
+
   const part = (i: number, extra?: string) => (
-    <span data-part className={cn("block will-change-transform", extra)}>
+    <span data-part data-depth={i ? -60 : -130} className={cn("block will-change-transform", extra)}>
       <span className="-mb-[0.14em] block overflow-hidden pb-[0.14em]">
         {/* React does not manage this text node; the scramble effect rewrites it. */}
         <span data-part-inner className="inline-block whitespace-nowrap" dangerouslySetInnerHTML={{ __html: words[i] }} />
@@ -75,14 +90,17 @@ export function PageTitle({ words, intro }: PageTitleProps) {
 
   return (
     <section ref={ref} className="relative flex min-h-[80svh] flex-col justify-between gap-16 px-6 pb-12 pt-36 md:px-8 md:pt-40">
-      <h1 className={cn("flex flex-col font-heading leading-[0.98] text-navy md:flex-row md:justify-between", sizeFor(words.join(" ").length))}>
+      {/* Decorative marks in the open middle of the section; desktop only so they never sit on text. */}
+      <span aria-hidden data-depth={-150} className="pointer-events-none absolute left-[42%] top-[58%] hidden size-1.5 bg-navy/40 will-change-transform md:block" />
+      <span aria-hidden data-depth={70} className="pointer-events-none absolute right-[18%] top-[68%] hidden size-3 border border-kooo-green-dark will-change-transform md:block" />
+      <h1 className={cn("relative flex flex-col font-heading leading-[0.98] text-navy md:flex-row md:justify-between", sizeFor(words.join(" ").length))}>
         <span className="sr-only">{words.join(" ")}</span>
         <span aria-hidden className="contents">
           {part(0)}
           {part(1, "self-end md:self-auto")}
         </span>
       </h1>
-      <div className="flex items-end justify-between gap-8">
+      <div data-depth={30} className="relative flex items-end justify-between gap-8 will-change-transform">
         {intro && (
           <SplitReveal trigger="ready" delay={0.9} className="max-w-xl text-lg leading-relaxed md:text-xl">
             {intro}

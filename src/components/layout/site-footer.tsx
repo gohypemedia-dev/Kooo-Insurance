@@ -45,9 +45,9 @@ export function SiteFooter() {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         const range = { trigger: ref.current, start: "top bottom", end: "bottom bottom", scrub: 0.8 };
-        // The panel grows into its frame and its content settles as the footer scrolls in.
-        gsap.fromTo("[data-footer-panel]", { scale: 0.93 }, { scale: 1, ease: "none", scrollTrigger: range });
-        gsap.fromTo("[data-footer-inner]", { yPercent: -14 }, { yPercent: 0, ease: "none", scrollTrigger: range });
+        // Footer reveal: the panel starts tucked up behind the page (clipped by the footer's top edge)
+        // and travels slower than the scroll, so the page appears to lift off it.
+        gsap.fromTo("[data-footer-panel]", { yPercent: -45, scale: 0.95 }, { yPercent: 0, scale: 1, ease: "none", scrollTrigger: range });
         // Wordmark letters rise one after another, tied to the scroll.
         gsap.fromTo(
           "[data-footer-char]",
@@ -65,13 +65,13 @@ export function SiteFooter() {
   );
 
   return (
-    <footer ref={ref} className="bg-cloud p-2 sm:p-3 md:p-4">
+    <footer ref={ref} className="overflow-clip bg-cloud p-2 sm:p-3 md:p-4">
       <div
         data-footer-panel
         className="origin-bottom rounded-[2rem] bg-[linear-gradient(115deg,#15cb8b_0%,#b9efdc_38%,#d6dbe1_72%,#eeeeee_100%)] p-2 will-change-transform md:p-2.5"
       >
         <div className="overflow-hidden rounded-[1.6rem] bg-navy text-white">
-          <div data-footer-inner className="px-6 pb-6 pt-8 will-change-transform md:px-10 md:pt-10">
+          <div className="px-6 pb-6 pt-8 md:px-10 md:pt-10">
             <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.1fr_1fr_1fr_1.1fr]">
               <div>
                 <RingsMark color="#b9efdc" className="-ml-4 h-28 w-48 md:h-36 md:w-60" />

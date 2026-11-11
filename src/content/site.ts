@@ -244,6 +244,31 @@ export const home = {
     title: "Here to help you protect your business, home, and everything in between",
     statementImage: "/images/photos/pexels-2199293.jpg",
   },
+  /** Captions for the scroll-driven hero film, one per chapter. */
+  story: [
+    {
+      title: "It starts like any other evening.",
+      text: "The shop is shut. The truck is parked. Everything you have built is right where you left it.",
+    },
+    {
+      title: "Then it happens.",
+      text: "A storm. A spark. An accident. No warning, and no way to take it back.",
+    },
+    {
+      title: "When the smoke clears, the hard part begins.",
+      text: "Stock gone. Doors shut. Forms, phone calls, and no idea where to start.",
+    },
+    {
+      title: "This is where Kooo steps in.",
+      // Kooo's own line, from the About page ("Why choose Kooo").
+      text: "We do not expect you to speak the language of insurance. That is our job.",
+    },
+    {
+      title: "Back in business.",
+      // Kooo's own line, from the About page ("Moving forward together").
+      text: "Insurance is more than a policy. It is peace of mind.",
+    },
+  ],
   solutionsIntro:
     "At Kooo Insurance, we provide a wide range of insurance solutions to protect what matters most, from business operations to personal assets.",
   // Headings from the home page, paired with Kooo's own lines from the About page.

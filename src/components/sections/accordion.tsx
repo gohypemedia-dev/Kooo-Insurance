@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
+import { gsap, useGSAP } from "@/lib/gsap";
 import { ArrowBox } from "@/components/ui/arrow-box";
 import { cn } from "@/lib/utils";
 
@@ -13,9 +14,30 @@ type AccordionProps = {
 export function Accordion({ items, defaultOpen = 0 }: AccordionProps) {
   const [open, setOpen] = useState<number | null>(defaultOpen);
   const id = useId();
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Rows rise in one after another the first time the list scrolls into view.
+  useGSAP(
+    () => {
+      const el = ref.current;
+      if (!el) return;
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.from(el.children, {
+          y: 40,
+          opacity: 0,
+          duration: 1,
+          stagger: 0.08,
+          ease: "power3.out",
+          scrollTrigger: { trigger: el, start: "top 85%", once: true },
+        });
+      });
+    },
+    { scope: ref },
+  );
 
   return (
-    <div className="space-y-3">
+    <div ref={ref} className="space-y-3">
       {items.map((item, i) => {
         const isOpen = open === i;
         return (

@@ -172,6 +172,12 @@
   }
 }
 
+/* Hero film: the line under "Scroll to play the story". */
+@keyframes story-hint {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

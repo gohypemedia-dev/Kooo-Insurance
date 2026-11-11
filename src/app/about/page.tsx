@@ -5,6 +5,7 @@ import { ImageBand } from "@/components/sections/image-band";
 import { NumberedRows } from "@/components/sections/numbered-rows";
 import { Reveal } from "@/components/motion/reveal";
 import { ImageReveal } from "@/components/motion/image-reveal";
+import { Parallax } from "@/components/motion/parallax";
 import { SplitReveal } from "@/components/motion/split-reveal";
 import { KoooLogo } from "@/components/brand/kooo-logo";
 import { CtaLink } from "@/components/ui/cta-link";
@@ -39,15 +40,18 @@ export default function AboutPage() {
         <Reveal stagger={0.08} className="mt-16 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
           {about.workWith.map((group, i) => (
             <figure key={group} className="group">
-              <ImageReveal
-                src={about.workWithImages[i]}
-                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                className="aspect-[4/5]"
-              />
-              <figcaption className="mt-4 flex items-start justify-between gap-6">
-                <span className="text-lg leading-snug text-navy md:text-xl">{group}</span>
-                <span aria-hidden className="mt-2 size-1.5 shrink-0 bg-kooo-green-dark" />
-              </figcaption>
+              {/* Three-column layout only: each column travels at its own speed. */}
+              <Parallax amount={[0, 36, 18][i % 3]} query="(min-width: 1024px)">
+                <ImageReveal
+                  src={about.workWithImages[i]}
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  className="aspect-[4/5]"
+                />
+                <figcaption className="mt-4 flex items-start justify-between gap-6">
+                  <span className="text-lg leading-snug text-navy md:text-xl">{group}</span>
+                  <span aria-hidden className="mt-2 size-1.5 shrink-0 bg-kooo-green-dark" />
+                </figcaption>
+              </Parallax>
             </figure>
           ))}
 
