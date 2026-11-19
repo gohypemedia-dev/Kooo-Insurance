@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Alice, DM_Sans, Lato, Source_Sans_3 } from "next/font/google";
 import "lenis/dist/lenis.css";
 import "./globals.css";
@@ -45,8 +46,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en-AU" className={`${alice.variable} ${sourceSans.variable} ${lato.variable} ${dmSans.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <SmoothScroll>
-          <TransitionOverlay />
-          <SiteHeader />
+          <Suspense fallback={null}>
+            <TransitionOverlay />
+          </Suspense>
+          <Suspense fallback={null}>
+            <SiteHeader />
+          </Suspense>
           <main className="flex-1">{children}</main>
           <SiteFooter />
         </SmoothScroll>

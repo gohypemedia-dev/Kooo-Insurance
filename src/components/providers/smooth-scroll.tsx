@@ -1,15 +1,31 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useUi } from "@/lib/ui-store";
 
+/**
+ * Isolated listener for path changes wrapped in Suspense so the
+ * root SmoothScroll component does not block static prerendering.
+ */
+function ScrollTriggerNavigationListener() {
+  const pathname = usePathname();
+
+  // Persistent parts (like the footer) need fresh scroll measurements on every new page,
+  // including browser back/forward, which skips the transition curtain.
+  useEffect(() => {
+    const id = requestAnimationFrame(() => ScrollTrigger.refresh());
+    return () => cancelAnimationFrame(id);
+  }, [pathname]);
+
+  return null;
+}
+
 // Lenis smooth scrolling driven by GSAP's ticker so ScrollTrigger stays in sync.
 export function SmoothScroll({ children }: { children: React.ReactNode }) {
   const setLenis = useUi((s) => s.setLenis);
-  const pathname = usePathname();
 
   useEffect(() => {
     const lenis = new Lenis({ lerp: 0.085, smoothWheel: true, wheelMultiplier: 1 });
@@ -30,12 +46,12 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
     };
   }, [setLenis]);
 
-  // Persistent parts (like the footer) need fresh scroll measurements on every new page,
-  // including browser back/forward, which skips the transition curtain.
-  useEffect(() => {
-    const id = requestAnimationFrame(() => ScrollTrigger.refresh());
-    return () => cancelAnimationFrame(id);
-  }, [pathname]);
-
-  return <>{children}</>;
+  return (
+    <>
+      <Suspense fallback={null}>
+        <ScrollTriggerNavigationListener />
+      </Suspense>
+      {children}
+    </>
+  );
 }
