@@ -202,12 +202,12 @@ export function VideoHero() {
         }
 
         // Keep "SCROLL TO PLAY" visible while scrolling through the hero,
-        // and smoothly disappear as the hero section finishes (between 0.82 and 1.0 progress)
+        // and smoothly disappear as the hero section finishes (between 0.85 and 1.0 progress)
         const scrollHint = scrollHintRef.current;
         if (scrollHint) {
           let opacity = 1;
-          if (state.currentProgress > 0.82) {
-            opacity = Math.max(0, 1 - (state.currentProgress - 0.82) / 0.16);
+          if (state.currentProgress > 0.85) {
+            opacity = Math.max(0, 1 - (state.currentProgress - 0.85) / 0.14);
           }
           scrollHint.style.opacity = opacity.toFixed(3);
           scrollHint.style.pointerEvents = opacity > 0.05 ? "auto" : "none";
@@ -321,8 +321,13 @@ export function VideoHero() {
   );
 
   const scrollToNext = useCallback(() => {
+    const container = containerRef.current;
+    const targetY = container
+      ? container.offsetTop + container.offsetHeight - window.innerHeight
+      : window.innerHeight * 2.4;
+
     window.scrollTo({
-      top: window.innerHeight * 1.8,
+      top: targetY,
       behavior: "smooth",
     });
   }, []);
@@ -331,7 +336,7 @@ export function VideoHero() {
     <section
       ref={containerRef}
       aria-label="Kooo Insurance interactive visual experience"
-      className="relative h-[260vh] w-full bg-navy text-white"
+      className="relative h-[340vh] w-full bg-navy text-white"
     >
       {/* Visually hidden heading for SEO and screen readers */}
       <h1 className="sr-only">Kooo Insurance — Protect your tomorrow, today</h1>
