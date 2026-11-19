@@ -9,10 +9,17 @@ import { RollText } from "@/components/motion/roll-text";
 import { FacebookIcon, InstagramIcon } from "@/components/ui/social-icons";
 
 const pages = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Insurance Solutions", href: "/insurancesolutions" },
+  { label: "Insurance", href: "/insurancesolutions" },
+  { label: "Industries", href: "/industries" },
+  { label: "Claims", href: "/claims" },
+  { label: "About Kooo", href: "/about" },
   { label: "Contact", href: "/contact" },
+];
+
+const supportPages = [
+  { label: "Referral Partners", href: "/referral-partners" },
+  { label: "Help & FAQs", href: "/faqs" },
+  { label: "Service Locations", href: "/locations" },
 ];
 
 const WORDMARK = "Kooo Insurance";
@@ -68,34 +75,47 @@ export function SiteFooter() {
     <footer ref={ref} className="overflow-clip bg-cloud p-2 sm:p-3 md:p-4">
       <div
         data-footer-panel
-        className="origin-bottom rounded-[2rem] bg-[linear-gradient(115deg,#15cb8b_0%,#b9efdc_38%,#d6dbe1_72%,#eeeeee_100%)] p-2 will-change-transform md:p-2.5"
+        className="origin-bottom rounded-[2rem] bg-navy/20 p-2 will-change-transform md:p-2.5"
       >
         <div className="overflow-hidden rounded-[1.6rem] bg-navy text-white">
           <div className="px-6 pb-6 pt-8 md:px-10 md:pt-10">
             <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.1fr_1fr_1fr_1.1fr]">
               <div>
-                <RingsMark color="#b9efdc" className="-ml-4 h-28 w-48 md:h-36 md:w-60" />
-                <p className="mt-2 max-w-60 font-heading text-2xl leading-snug text-kooo-mint">{tagline}</p>
+                <RingsMark color="#ffffff" className="-ml-4 h-28 w-48 md:h-36 md:w-60" />
+                <p className="mt-2 max-w-60 font-heading text-2xl leading-snug text-white">{tagline}</p>
               </div>
 
               <nav aria-label="Footer">
+                <p className="mb-3 text-xs uppercase tracking-[0.2em] text-white/60">Navigation</p>
                 <ul className="space-y-2">
                   {pages.map((p) => (
                     <li key={p.href}>
-                      <Link href={p.href} className="group inline-block text-xl text-kooo-mint md:text-2xl">
+                      <Link href={p.href} className="group inline-block text-lg text-white hover:text-white/80 transition-colors md:text-xl">
                         <RollText text={p.label} />
                       </Link>
                     </li>
                   ))}
                 </ul>
+                <div className="mt-6 border-t border-white/15 pt-4">
+                  <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/50">Support</p>
+                  <ul className="space-y-1.5 text-sm text-white/80">
+                    {supportPages.map((sp) => (
+                      <li key={sp.href}>
+                        <Link href={sp.href} className="hover:text-white transition">
+                          {sp.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </nav>
 
               <div>
-                <p className="mb-3 text-base text-white/70">Insurance solutions</p>
+                <p className="mb-3 text-xs uppercase tracking-[0.2em] text-white/60">Insurance solutions</p>
                 <ul className="space-y-2">
                   {categories.map((c) => (
                     <li key={c.slug}>
-                      <Link href={`/${c.slug}`} className="group inline-block text-base text-white/90 hover:text-kooo-mint md:text-[17px]">
+                      <Link href={`/${c.slug}`} className="group inline-block text-base text-white/90 hover:text-white md:text-[17px]">
                         <RollText text={c.name} stagger={10} />
                       </Link>
                     </li>
@@ -105,23 +125,31 @@ export function SiteFooter() {
 
               <div className="space-y-5 text-base md:text-[17px]">
                 <div>
-                  <p className="mb-1 text-white/70">Get in touch</p>
-                  <a href={contact.phoneHref} className="group block w-fit text-kooo-mint">
+                  <p className="mb-1 text-xs uppercase tracking-[0.2em] text-white/60">Get in touch</p>
+                  <a href={contact.phoneHref} className="group block w-fit text-xl font-heading text-white hover:text-white/80">
                     <RollText text={contact.phone} stagger={10} />
                   </a>
-                  <a href={`mailto:${contact.email}`} className="block break-all text-kooo-mint hover:underline">
+                  <a href={`mailto:${contact.email}`} className="block break-all text-sm text-white/85 hover:underline mt-1">
                     {contact.email}
                   </a>
                 </div>
                 <div>
-                  <p className="mb-1 text-white/70">Visit us</p>
-                  <p className="text-white/90">{contact.address}</p>
+                  <p className="mb-1 text-xs uppercase tracking-[0.2em] text-white/60">Headquarters</p>
+                  <p className="text-sm text-white/85">{contact.address}</p>
                 </div>
-                <div className="flex gap-2">
-                  <a href={contact.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="border border-white/25 p-2.5 text-kooo-mint transition-colors hover:bg-kooo-mint hover:text-navy">
+                <div>
+                  <Link
+                    href="/contact"
+                    className="inline-block bg-white px-5 py-2.5 font-button text-xs font-semibold uppercase tracking-wider text-navy hover:bg-cloud transition"
+                  >
+                    Request a Quote
+                  </Link>
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <a href={contact.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="border border-white/25 p-2.5 text-white transition-colors hover:bg-white hover:text-navy">
                     <FacebookIcon className="size-5" />
                   </a>
-                  <a href={contact.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="border border-white/25 p-2.5 text-kooo-mint transition-colors hover:bg-kooo-mint hover:text-navy">
+                  <a href={contact.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="border border-white/25 p-2.5 text-white transition-colors hover:bg-white hover:text-navy">
                     <InstagramIcon className="size-5" />
                   </a>
                 </div>
@@ -129,7 +157,7 @@ export function SiteFooter() {
             </div>
 
             <div ref={wordBox} className="mt-14 md:mt-20">
-              <p className="overflow-hidden whitespace-nowrap pb-[0.06em] text-center font-heading leading-[1.02] text-kooo-mint">
+              <p className="overflow-hidden whitespace-nowrap pb-[0.06em] text-center font-heading leading-[1.02] text-white">
                 <span className="sr-only">{WORDMARK}</span>
                 <span ref={word} aria-hidden className="inline-flex text-[12vw]">
                   {Array.from(WORDMARK).map((char, i) => (
@@ -145,7 +173,7 @@ export function SiteFooter() {
               <ul className="flex flex-wrap gap-x-6 gap-y-2">
                 {legal.documents.map((doc) => (
                   <li key={doc.href}>
-                    <a href={doc.href} target="_blank" rel="noopener noreferrer" className="hover:text-kooo-mint">
+                    <a href={doc.href} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
                       {doc.label}
                     </a>
                   </li>

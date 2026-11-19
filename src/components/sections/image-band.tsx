@@ -54,7 +54,7 @@ export function ImageBand({ image, title, text, link, rotating }: ImageBandProps
       <div className="absolute inset-0 bg-gradient-to-t from-navy/95 via-navy/35 to-navy/10" />
       {/* Extra shade behind the mid-height rotating line so it reads over bright photos. */}
       {rotating && <div className="absolute inset-0 bg-navy/45" />}
-      <CornerDots inset="1.5rem" className="text-kooo-mint" />
+      <CornerDots inset="1.5rem" className="text-white/30" />
 
       {rotating && (
         <div className="absolute inset-x-6 top-1/2 -translate-y-1/2 md:inset-x-10">
@@ -75,7 +75,7 @@ export function ImageBand({ image, title, text, link, rotating }: ImageBandProps
           {link && (
             <Link
               href={link.href}
-              className="group justify-self-start border-b border-white/60 pb-1 font-button text-lg text-white transition-colors hover:border-kooo-mint hover:text-kooo-mint md:justify-self-end"
+              className="group justify-self-start border-b border-white/60 pb-1 font-button text-lg text-white transition-colors hover:border-white hover:text-white/80 md:justify-self-end"
             >
               <RollText text={link.label} />
             </Link>

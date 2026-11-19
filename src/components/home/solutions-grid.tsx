@@ -48,7 +48,7 @@ function SolutionCard({ category: c, index, open, onToggle }: CardProps) {
       <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/20 to-navy/55" />
       <div
         aria-hidden
-        className="absolute inset-0 origin-bottom scale-y-0 bg-kooo-mint transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-y-100 group-has-[a:focus-visible]:scale-y-100 group-data-[open=true]:scale-y-100"
+        className="absolute inset-0 origin-bottom scale-y-0 bg-white transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-y-100 group-has-[a:focus-visible]:scale-y-100 group-data-[open=true]:scale-y-100"
       />
 
       <div className="relative flex flex-1 flex-col">

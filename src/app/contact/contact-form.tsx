@@ -52,7 +52,7 @@ export function ContactForm() {
     const [heading, ...rest] = contactPage.success;
     return (
       <div className="flex flex-col items-start gap-4 py-8" role="status">
-        <CheckCircle2 className="size-12 text-kooo-green-dark" />
+        <CheckCircle2 className="size-12 text-navy" />
         <h3 className="text-2xl text-navy">{heading}</h3>
         {rest.map((line) => (
           <p key={line} className="text-muted-foreground">{line}</p>

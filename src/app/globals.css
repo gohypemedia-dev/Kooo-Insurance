@@ -17,11 +17,11 @@
   --color-navy-deep: #06142e;
   --color-slate: #303f46;
   --color-ink: #313131;
-  --color-kooo-green: #15cb8b;
-  /* Darker green for green text on light backgrounds (readable contrast). */
-  --color-kooo-green-dark: #0a6f4c;
-  /* Light tint of the brand green: hover fills, and text on navy panels. */
-  --color-kooo-mint: #b9efdc;
+  /* Brand neutral tokens: Navy, White, Light Grey, Platinum */
+  --color-kooo-green: #0a1f44;
+  --color-kooo-green-dark: #0a1f44;
+  --color-kooo-mint: #ffffff;
+  --color-platinum: #e2e8f0;
   --color-cloud: #eeeeee;
   --color-cream: #f8f6ee;
   --color-steel: #5d6068;
@@ -65,7 +65,7 @@
 }
 
 :root {
-  /* Kooo light theme: navy #0a1f44, green #15cb8b, cloud #eeeeee, ink #313131 */
+  /* Kooo brand theme: navy #0a1f44, cloud #eeeeee, white #ffffff, slate #303f46, platinum #e2e8f0 */
   --background: #eeeeee;
   --foreground: #313131;
   --card: #ffffff;
@@ -78,8 +78,8 @@
   --secondary-foreground: #0a1f44;
   --muted: #eeeeee;
   --muted-foreground: #5d6068;
-  --accent: #15cb8b;
-  --accent-foreground: #0a1f44;
+  --accent: #0a1f44;
+  --accent-foreground: #ffffff;
   --destructive: oklch(0.577 0.245 27.325);
   --border: #dedede;
   --input: #d4d4d4;
@@ -176,6 +176,56 @@
 @keyframes story-hint {
   0% { transform: translateY(-100%); }
   100% { transform: translateY(200%); }
+}
+
+/* Animated Blue Shimmer for "SCROLL TO PLAY" */
+@keyframes scroll-shimmer-blue {
+  0% {
+    background-position: 150% 0;
+  }
+  100% {
+    background-position: -150% 0;
+  }
+}
+
+.animate-scroll-shimmer-blue {
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.6) 30%,
+    #60a5fa 42%,
+    #38bdf8 50%,
+    #00d2ff 58%,
+    rgba(255, 255, 255, 0.6) 70%,
+    rgba(255, 255, 255, 0.6) 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: scroll-shimmer-blue 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Animated Vertical Line Blue Runner */
+@keyframes scroll-line-blue {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(200%);
+    opacity: 0;
+  }
+}
+
+.animate-scroll-line-blue {
+  animation: scroll-line-blue 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

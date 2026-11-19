@@ -108,7 +108,7 @@ export function Testimonials() {
         <div aria-hidden className={cn(CARD, "pointer-events-none absolute left-1/2 top-0 -translate-x-1/2")}>
           {/* An inner layer takes the motion so the centring translate above is never overwritten. */}
           <div data-frame-dots className="absolute inset-0">
-            <CornerDots inset="-0.9rem" className="text-kooo-green-dark" />
+            <CornerDots inset="-0.9rem" className="text-navy/25" />
           </div>
         </div>
       </div>

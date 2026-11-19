@@ -30,11 +30,11 @@ export default function ContactPage() {
         <div className="grid gap-12 border-t border-navy/20 pt-12 lg:grid-cols-2">
           <Reveal stagger={0.1} className="space-y-5">
             <a href={`mailto:${contact.email}`} className="group flex items-center gap-4 font-heading text-[clamp(1.4rem,2.6vw,2.4rem)] text-navy">
-              <span aria-hidden className="size-1.5 shrink-0 bg-kooo-green-dark" />
+              <span aria-hidden className="size-1.5 shrink-0 bg-navy" />
               <span className="break-all border-b border-transparent transition-colors group-hover:border-navy">{contact.email}</span>
             </a>
             <a href={contact.phoneHref} className="group flex items-center gap-4 font-heading text-[clamp(1.4rem,2.6vw,2.4rem)] text-navy">
-              <span aria-hidden className="size-1.5 shrink-0 bg-kooo-green-dark" />
+              <span aria-hidden className="size-1.5 shrink-0 bg-navy" />
               <span className="border-b border-transparent transition-colors group-hover:border-navy">{contact.phone}</span>
             </a>
           </Reveal>
@@ -42,20 +42,20 @@ export default function ContactPage() {
           <Reveal>
             <div className="flex items-center justify-between pb-4">
               <h2 className="font-sans text-lg font-semibold">Contact details</h2>
-              <span className="inline-flex items-center gap-2 text-base text-kooo-green-dark">
-                <span aria-hidden className="size-2 rounded-full bg-kooo-green" /> Australia-wide
+              <span className="inline-flex items-center gap-2 text-base text-navy">
+                <span aria-hidden className="size-2 rounded-full bg-navy" /> Australia-wide
               </span>
             </div>
             <dl className="border-t border-navy/15">
               {details.map((d) => (
                 <div
                   key={d.label}
-                  className="grid grid-cols-[6.5rem_1fr] gap-4 border-b border-navy/15 px-3 py-3.5 text-base transition-colors duration-300 hover:bg-navy hover:text-white md:text-lg [&:hover_a]:text-kooo-mint"
+                  className="grid grid-cols-[6.5rem_1fr] gap-4 border-b border-navy/15 px-3 py-3.5 text-base transition-colors duration-300 hover:bg-navy hover:text-white md:text-lg [&:hover_a]:text-white"
                 >
                   <dt className="font-medium">{d.label}</dt>
                   <dd className="text-right">
                     {d.href ? (
-                      <a href={d.href} target={d.href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="break-all text-navy">
+                      <a href={d.href} target={d.href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="break-all text-navy transition-colors group-hover:text-white">
                         {d.value}
                       </a>
                     ) : (
@@ -79,7 +79,7 @@ export default function ContactPage() {
             <p className="mt-6 max-w-sm text-lg leading-relaxed text-muted-foreground">{contactPage.subtitle}</p>
           </div>
           <Reveal className="relative bg-white p-6 md:p-10">
-            <CornerDots inset="-0.6rem" className="text-kooo-green-dark" />
+            <CornerDots inset="-0.6rem" className="text-navy/30" />
             <ContactForm />
           </Reveal>
         </div>

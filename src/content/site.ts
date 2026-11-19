@@ -23,7 +23,7 @@ export const legal = {
   ],
 };
 
-export type CoverItem = { title: string; description: string };
+export type CoverItem = { title: string; description: string; href?: string };
 
 export type Category = {
   slug: string;
@@ -226,14 +226,21 @@ export function getCategory(slug: string) {
 }
 
 export const nav = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
   {
-    label: "Our Insurance Solutions",
+    label: "Insurance",
     href: "/insurancesolutions",
     children: categories.map((c) => ({ label: c.title, href: `/${c.slug}` })),
   },
+  { label: "Industries", href: "/industries" },
+  { label: "Claims", href: "/claims" },
+  { label: "About Kooo", href: "/about" },
   { label: "Contact", href: "/contact" },
+];
+
+export const secondaryNav = [
+  { label: "Referral Partners", href: "/referral-partners" },
+  { label: "FAQs", href: "/faqs" },
+  { label: "Locations", href: "/locations" },
 ];
 
 export const home = {
@@ -247,26 +254,24 @@ export const home = {
   /** Captions for the scroll-driven hero film, one per chapter. */
   story: [
     {
-      title: "It starts like any other evening.",
-      text: "The shop is shut. The truck is parked. Everything you have built is right where you left it.",
+      title: "First light on the city.",
+      text: "The doors unlock, the machines hum. Everything you have built with care, ready for the day ahead.",
     },
     {
-      title: "Then it happens.",
-      text: "A storm. A spark. An accident. No warning, and no way to take it back.",
+      title: "The pulse of a continent.",
+      text: "Thousands of kilometres across open horizons. Keeping supply chains moving with quiet certainty.",
     },
     {
-      title: "When the smoke clears, the hard part begins.",
-      text: "Stock gone. Doors shut. Forms, phone calls, and no idea where to start.",
+      title: "Where foundations are built.",
+      text: "Where precision meets craft. Teams on site shaping infrastructure designed to stand for generations.",
     },
     {
-      title: "This is where Kooo steps in.",
-      // Kooo's own line, from the About page ("Why choose Kooo").
-      text: "We do not expect you to speak the language of insurance. That is our job.",
+      title: "The place you come home to.",
+      text: "At the end of every journey. The people, the memories, and the sanctuary that matter most.",
     },
     {
-      title: "Back in business.",
-      // Kooo's own line, from the About page ("Moving forward together").
-      text: "Insurance is more than a policy. It is peace of mind.",
+      title: "Protect your tomorrow, today.",
+      text: "We do not expect you to speak the language of insurance. That is our job — securing what matters across Australia.",
     },
   ],
   solutionsIntro:
@@ -315,37 +320,129 @@ export const insurers = [
 export const about = {
   title: "About Kooo Insurance",
   whoWeAre:
-    "Kooo Insurance is an Australian insurance brokerage committed to protecting what matters most. We combine fresh thinking, digital innovation, and real world experience to deliver insurance that adapts as your life and business evolve. Our approach is simple, clear, and straightforward so you always know where you stand.",
+    "Kooo Insurance is an Australian insurance brokerage committed to protecting what matters most. We combine fresh thinking, institutional underwriting access, and real-world commercial experience to deliver insurance that adapts as your business and assets evolve. Our approach is straightforward, transparent, and built on enduring client advocacy.",
   mission:
-    "We believe insurance should help you move forward with confidence, not hold you back with complexity. At Kooo, protection is designed to feel like progress, not paperwork. Our role is to simplify insurance, provide clarity, and deliver solutions that are always one step ahead.",
+    "We believe insurance should empower you to move forward with confidence, not hold you back with administrative friction. At Kooo, protection is designed to feel like progress, not paperwork. Our mandate is simple: translate complex risk into plain-English clarity, secure competitive market terms, and stand by your side when it matters most.",
+  company: {
+    title: "Our Company & Credentials",
+    tagline: "Corporate Authorised Representative of Metrix Connect Pty Ltd",
+    overview:
+      "Kooo Group Pty Ltd t/as Kooo Insurance is an Australian corporate authorised representative operating under the established Australian Financial Services Licence of Metrix Connect Pty Ltd. Headquartered in Bella Vista in Sydney’s Hills District, Kooo provides independent risk advice, market placement, and claims management across all Australian states and territories.",
+    credentials: [
+      { label: "Authorisation", value: "CAR No. 1315320", detail: "Corporate Authorised Representative" },
+      { label: "Licensee", value: "Metrix Connect Pty Ltd", detail: "AFSL No. 525491 | ABN 23 635 286 136" },
+      { label: "Entity", value: "Kooo Group Pty Ltd", detail: "ABN 64 686 043 345" },
+      { label: "Coverage", value: "Australia-Wide", detail: "Licensed nationwide across all states & territories" },
+    ],
+  },
+  values: [
+    {
+      title: "Plain English Clarity",
+      description:
+        "Insurance shouldn't require a legal degree. We discard jargon, illuminate policy fine print, and give you transparent counsel so you always know exactly what is protected.",
+    },
+    {
+      title: "Proactive Risk Protection",
+      description:
+        "True risk management is never set-and-forget. We continuously audit evolving operations, capital investments, and regulatory shifts so your business is never exposed to underinsurance.",
+    },
+    {
+      title: "Client-First Claims Advocacy",
+      description:
+        "The true test of a broker is claim time. When an incident occurs, we take complete charge of the claims process, negotiating vigorously with underwriters to secure full, timely payouts.",
+    },
+    {
+      title: "Nationwide Scope, Local Understanding",
+      description:
+        "From suburban businesses and high-risk construction projects to interstate freight logistics and national fleets, we combine broad market access with personal, responsive service.",
+    },
+  ],
+  approach: [
+    {
+      step: "01",
+      title: "Discovery & Risk Audit",
+      description:
+        "We begin with a comprehensive review of your operations, contracts, plant, assets, and liabilities to map exposures and eliminate coverage gaps.",
+    },
+    {
+      step: "02",
+      title: "Strategic Market Placement",
+      description:
+        "We leverage our access to Australia’s foremost underwriting agencies and Tier-1 insurers (including QBE, Chubb, NTI, Allianz, and Lloyd's syndicates) to negotiate competitive terms.",
+    },
+    {
+      step: "03",
+      title: "Transparent Implementation",
+      description:
+        "We present options with clear comparisons, agreed deductibles, and tailored policy wordings—ensuring your management team has total confidence before binding.",
+    },
+    {
+      step: "04",
+      title: "Ongoing Review & Claims Support",
+      description:
+        "As your operations expand, we actively adjust your coverage. If an event occurs, your dedicated broker manages the entire claims lifecycle from first notification to final settlement.",
+    },
+  ],
+  servicesSummary: [
+    {
+      title: "Business & Commercial",
+      href: "/businessinsurance",
+      description: "Packaged liability, business interruption, commercial property, and management liability.",
+    },
+    {
+      title: "Trades & Construction",
+      href: "/tradesconstructioninsurance",
+      description: "Contract works, public liability, plant & machinery, and portable tools cover for builders and tradies.",
+    },
+    {
+      title: "Truck & Fleet Transport",
+      href: "/truckfleetinsurance",
+      description: "Heavy haulage, commercial motor, goods in transit, and downtime cover for transport operators.",
+    },
+    {
+      title: "Specialty & Complex Risks",
+      href: "/specialtyinsurance",
+      description: "Cyber risk, professional indemnity, fine art, renewable energy, and bespoke commercial exposures.",
+    },
+    {
+      title: "Industry-Specific Programs",
+      href: "/industryinsurance",
+      description: "Tailored programs for NDIS providers, aged care, childcare, hospitality, strata, and dealerships.",
+    },
+    {
+      title: "Personal & Asset Protection",
+      href: "/personalinsurance",
+      description: "High-value residential property, prestige vehicles, marine craft, and personal asset portfolios.",
+    },
+  ],
   workWithIntro:
-    "From small businesses to large organisations, from homeowners to professionals, Kooo supports people across Australia. We work with:",
+    "From small businesses to large enterprises, from trades to national fleets, Kooo delivers comprehensive protection across Australia:",
   workWith: [
-    "Business owners, startups, and established companies",
-    "Trades and contractors including builders, electricians, and developers",
-    "Industry providers such as NDIS, aged care, healthcare, retail, and hospitality",
-    "Families and individuals protecting their homes, cars, and lifestyle",
-    "Community groups, schools, and organisations that need security and peace of mind",
+    "Business owners, startups, and established enterprises",
+    "Trades and construction contractors, builders, and developers",
+    "Transport, heavy haulage, logistics, and fleet operators",
+    "Healthcare, NDIS providers, aged care, and retail operators",
+    "Families and individuals protecting high-value homes and assets",
   ],
   /** One photo per `workWith` group, in the same order. */
   workWithImages: [
     "/images/photos/pexels-933964.jpg",
     "/images/photos/pexels-4981810.jpg",
+    "/images/photos/pexels-2199293.jpg",
     "/images/photos/pexels-2696064.jpg",
-    "/images/photos/pexels-30821414.jpg",
-    "/images/photos/pexels-8422248.jpg",
+    "/images/photos/pexels-7579041.jpg",
   ],
   whyIntro:
     "At Kooo, we do not expect you to speak the language of insurance. That is our job. What we offer is:",
   why: [
-    "Personal service backed by strong insurer relationships",
-    "Nationwide coverage with local understanding",
-    "Solutions designed to keep you growing, building, and moving forward",
-    "Confidence that your assets, livelihood, and future are protected",
+    "Personal service backed by strong tier-1 insurer and underwriter relationships",
+    "Nationwide capability with local Australian market understanding",
+    "Proactive insurance architectures designed to keep you growing, building, and moving forward",
+    "Confidence that your assets, livelihood, and future are safeguarded by accredited professionals",
   ],
   forward: {
     title: "Moving Forward Together",
-    text: "Insurance is more than a policy. It is peace of mind. Whether you are protecting your business, your home, or your future, Kooo Insurance is here to help you do it with confidence.",
+    text: "Insurance is more than a policy document. It is the peace of mind that allows you to take bold commercial steps. Whether protecting your business, your fleet, or your family, Kooo Insurance is your trusted partner.",
   },
   images: [
     "/images/photos/pexels-840996.jpg",

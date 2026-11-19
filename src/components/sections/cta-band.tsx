@@ -45,18 +45,18 @@ export function CtaBand({ title, text, label = "Let’s Talk Insurance", image =
           <Image src={image} alt="" fill sizes="100vw" className="object-cover opacity-55" />
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-navy via-navy/80 to-navy/20" />
-        <CornerDots inset="1.25rem" className="text-kooo-mint" />
+        <CornerDots inset="1.25rem" className="text-white/30" />
         <div className="relative flex min-h-[80svh] flex-col justify-between gap-16 p-8 md:p-14">
           <div className="max-w-xl">
             <SplitReveal as="h2" className="text-[clamp(2.25rem,4.6vw,4.75rem)] leading-[1.04]">
               {title}
             </SplitReveal>
             <SplitReveal className="mt-6 text-lg leading-relaxed text-white/80">{text}</SplitReveal>
-            <CtaLink href="/contact" variant="mint" className="mt-10">
+            <CtaLink href="/contact" variant="light" className="mt-10">
               {label}
             </CtaLink>
           </div>
-          <KoooLogo wordmarkOnly className="w-[min(62vw,26rem)] self-end text-kooo-mint/90" title="" />
+          <KoooLogo wordmarkOnly className="w-[min(62vw,26rem)] self-end text-white/80" title="" />
         </div>
       </div>
     </section>

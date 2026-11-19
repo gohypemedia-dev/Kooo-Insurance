@@ -175,14 +175,14 @@ export function Marquee({ tone = "dark", className }: MarqueeProps) {
                           href={`/${c.slug}`}
                           tabIndex={decorative ? -1 : undefined}
                           className={cn(
-                            "outline-none transition-colors duration-500 focus-visible:underline focus-visible:decoration-kooo-green focus-visible:decoration-2 focus-visible:underline-offset-8",
-                            dark ? "hover:text-kooo-mint" : "hover:text-kooo-green-dark",
+                            "outline-none transition-colors duration-500 focus-visible:underline focus-visible:decoration-navy focus-visible:decoration-2 focus-visible:underline-offset-8",
+                            dark ? "hover:text-white/70" : "hover:text-navy/70",
                             r === 0 ? (dark ? "text-white" : "text-navy") : dark ? "text-white/30" : "text-navy/25",
                           )}
                         >
                           {c.shortName}
                         </Link>
-                        <span aria-hidden className="mx-[0.4em] inline-block size-[0.13em] shrink-0 bg-kooo-green" />
+                        <span aria-hidden className="mx-[0.4em] inline-block size-[0.13em] shrink-0 bg-current opacity-60" />
                       </li>
                     ))}
                   </ul>

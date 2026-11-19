@@ -15,7 +15,7 @@ export function ArrowBox({ className, open, rotateOnHover = true }: ArrowBoxProp
     <span
       aria-hidden
       className={cn(
-        "inline-flex size-9 shrink-0 items-center justify-center bg-navy text-kooo-mint transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "inline-flex size-9 shrink-0 items-center justify-center bg-navy text-white transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
         rotateOnHover && "group-hover:rotate-180 group-focus-visible:rotate-180",
         open && "rotate-180",
         className,

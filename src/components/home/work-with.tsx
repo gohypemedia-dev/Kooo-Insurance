@@ -78,7 +78,10 @@ export function WorkWith() {
       <div className="px-6 md:px-8">
         <div className="lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16 xl:gap-24">
           <div className="lg:sticky lg:top-32 lg:self-start">
-            <SplitReveal as="h2" className="max-w-[9ch] text-[clamp(2.6rem,5.6vw,5.75rem)] leading-[1.02]">
+            <p className="font-button text-sm uppercase tracking-[0.2em] text-navy/70">
+              Industries We Support
+            </p>
+            <SplitReveal as="h2" className="mt-4 max-w-[9ch] text-[clamp(2.6rem,5.6vw,5.75rem)] leading-[1.02]">
               Who we work with
             </SplitReveal>
             <SplitReveal className="mt-8 max-w-md text-lg leading-relaxed md:text-xl">{about.workWithIntro}</SplitReveal>
@@ -98,7 +101,7 @@ export function WorkWith() {
                     <span
                       data-num
                       aria-hidden
-                      className="absolute -top-4 left-4 z-10 bg-kooo-mint px-3 py-2 font-button text-sm tabular-nums text-navy will-change-transform md:left-6"
+                      className="absolute -top-4 left-4 z-10 bg-navy px-3 py-2 font-button text-sm tabular-nums text-white will-change-transform md:left-6"
                     >
                       {String(i + 1).padStart(2, "0")}
                     </span>
@@ -112,8 +115,11 @@ export function WorkWith() {
           </ol>
         </div>
 
-        <div className="mt-20 flex justify-end border-t border-navy/20 pt-8 md:mt-28">
-          <Link href="/about" className="group border-b border-navy pb-1 font-button text-lg text-navy">
+        <div className="mt-20 flex flex-wrap items-center justify-between gap-6 border-t border-navy/20 pt-8 md:mt-28">
+          <Link href="/industries" className="group border-b border-navy pb-1 font-button text-lg text-navy">
+            <RollText text="Explore All Industries" />
+          </Link>
+          <Link href="/about" className="group border-b border-navy/60 pb-1 font-button text-lg text-navy/80 hover:border-navy hover:text-navy">
             <RollText text="About Kooo" />
           </Link>
         </div>

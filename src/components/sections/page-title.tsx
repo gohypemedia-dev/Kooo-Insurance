@@ -92,7 +92,7 @@ export function PageTitle({ words, intro }: PageTitleProps) {
     <section ref={ref} className="relative flex min-h-[80svh] flex-col justify-between gap-16 px-6 pb-12 pt-36 md:px-8 md:pt-40">
       {/* Decorative marks in the open middle of the section; desktop only so they never sit on text. */}
       <span aria-hidden data-depth={-150} className="pointer-events-none absolute left-[42%] top-[58%] hidden size-1.5 bg-navy/40 will-change-transform md:block" />
-      <span aria-hidden data-depth={70} className="pointer-events-none absolute right-[18%] top-[68%] hidden size-3 border border-kooo-green-dark will-change-transform md:block" />
+      <span aria-hidden data-depth={70} className="pointer-events-none absolute right-[18%] top-[68%] hidden size-3 border border-navy/30 will-change-transform md:block" />
       <h1 className={cn("relative flex flex-col font-heading leading-[0.98] text-navy md:flex-row md:justify-between", sizeFor(words.join(" ").length))}>
         <span className="sr-only">{words.join(" ")}</span>
         <span aria-hidden className="contents">
@@ -106,7 +106,7 @@ export function PageTitle({ words, intro }: PageTitleProps) {
             {intro}
           </SplitReveal>
         )}
-        <span aria-hidden className="ml-auto size-2 shrink-0 bg-kooo-green-dark" />
+        <span aria-hidden className="ml-auto size-2 shrink-0 bg-navy" />
       </div>
     </section>
   );

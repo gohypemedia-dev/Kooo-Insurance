@@ -144,11 +144,11 @@ export function TransitionOverlay() {
     <div ref={root} id="kooo-overlay" aria-hidden className="pointer-events-none fixed inset-0 z-[100]">
       <div
         data-curtain
-        className="pointer-events-auto absolute inset-0 flex items-center justify-center bg-navy text-kooo-mint will-change-transform"
+        className="pointer-events-auto absolute inset-0 flex items-center justify-center bg-navy text-white will-change-transform"
       >
         <div data-overlay-content className="relative h-20 w-32">
           {DOTS.map((pos) => (
-            <span key={pos} data-dot className={`absolute size-1.5 bg-kooo-mint ${pos}`} />
+            <span key={pos} data-dot className={`absolute size-1.5 bg-white ${pos}`} />
           ))}
           <div data-mark className="absolute inset-x-4 top-1/2 -translate-y-1/2" style={{ clipPath: "inset(0% 100% 0% 0%)" }}>
             <KoooLogo wordmarkOnly className="w-full" title="" />

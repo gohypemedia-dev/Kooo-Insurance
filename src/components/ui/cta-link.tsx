@@ -12,10 +12,10 @@ type CtaLinkProps = {
 
 // Base colours, and the colour that sweeps up from the bottom on hover.
 const variants = {
-  solid: { base: "bg-navy text-white hover:text-navy", fill: "bg-kooo-mint" },
+  solid: { base: "bg-navy text-white hover:text-navy", fill: "bg-white" },
   outline: { base: "border border-navy text-navy hover:text-white", fill: "bg-navy" },
-  light: { base: "bg-white text-navy", fill: "bg-kooo-mint" },
-  mint: { base: "bg-kooo-mint text-navy", fill: "bg-white" },
+  light: { base: "bg-white text-navy hover:text-white", fill: "bg-navy" },
+  mint: { base: "bg-white text-navy hover:text-white", fill: "bg-navy" },
 };
 
 // Pill button: a fill sweeps up behind the label while its letters roll.

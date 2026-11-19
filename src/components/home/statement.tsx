@@ -36,17 +36,17 @@ export function Statement() {
           <Image src={home.hero.statementImage} alt="" fill sizes="100vw" className="object-cover" />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-navy/40 via-navy/15 to-navy/95" />
-        <CornerDots inset="1.5rem" className="text-kooo-mint" />
+        <CornerDots inset="1.5rem" className="text-white/30" />
 
         <div className="relative flex h-full flex-col justify-between px-6 pb-16 pt-[26svh] md:px-10">
           <div
             data-panel-card
-            className="relative mx-auto w-full max-w-xl border border-kooo-mint/50 bg-navy/90 p-7 will-change-transform md:p-10"
+            className="relative mx-auto w-full max-w-xl border border-white/20 bg-navy/90 p-7 will-change-transform md:p-10"
           >
-            <span aria-hidden className="absolute right-3 top-3 size-1.5 bg-kooo-mint" />
+            <span aria-hidden className="absolute right-3 top-3 size-1.5 bg-white" />
             <h2 className="text-2xl leading-snug md:text-[2.1rem]">{home.hero.title}</h2>
             <p className="mt-4 text-lg text-white/75">{tagline}</p>
-            <KoooLogo wordmarkOnly className="ml-auto mt-14 w-24 text-kooo-mint" title="" />
+            <KoooLogo wordmarkOnly className="ml-auto mt-14 w-24 text-white" title="" />
           </div>
           <SplitReveal className="max-w-3xl font-heading text-[clamp(1.6rem,3vw,2.75rem)] leading-snug text-white">
             {home.trusted.text}

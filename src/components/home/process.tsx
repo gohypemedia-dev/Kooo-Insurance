@@ -95,13 +95,13 @@ export function Process() {
           <SplitReveal as="h2" className="max-w-[14ch] text-[clamp(2.5rem,4.6vw,4.75rem)] leading-[1.02]">
             {heading}
           </SplitReveal>
-          <p className="font-button text-sm uppercase tracking-[0.18em] text-kooo-green-dark">
+          <p className="font-button text-sm uppercase tracking-[0.18em] text-navy/70">
             {String(steps.length).padStart(2, "0")} steps
           </p>
         </div>
 
         <div aria-hidden className="mt-8 h-px bg-navy/15 lg:mt-10">
-          <div data-progress className="h-full origin-left bg-kooo-green-dark will-change-transform" />
+          <div data-progress className="h-full origin-left bg-navy will-change-transform" />
         </div>
 
         <ol data-track className="mt-14 flex flex-col gap-20 will-change-transform lg:mt-10 lg:min-h-0 lg:flex-1 lg:flex-row lg:gap-0">

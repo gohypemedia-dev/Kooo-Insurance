@@ -42,7 +42,7 @@ export function RotatingLink({ prefix, items, interval = 2600 }: RotatingLinkPro
   return (
     <div ref={ref}>
       <p data-rotating-line className="font-heading text-[clamp(1.5rem,3.2vw,2.75rem)] leading-tight text-white will-change-transform">
-        <span className="text-kooo-mint">{prefix}</span>{" "}
+        <span className="text-white/80">{prefix}</span>{" "}
         <span className="relative inline-flex overflow-hidden pb-[0.1em] align-bottom">
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.span
@@ -55,7 +55,7 @@ export function RotatingLink({ prefix, items, interval = 2600 }: RotatingLinkPro
             >
               <Link
                 href={item.href}
-                className="underline decoration-kooo-mint/50 decoration-1 underline-offset-[0.18em] transition-colors hover:decoration-kooo-mint"
+                className="underline decoration-white/50 decoration-1 underline-offset-[0.18em] transition-colors hover:decoration-white"
               >
                 {item.label}
               </Link>

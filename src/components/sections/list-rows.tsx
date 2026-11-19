@@ -56,7 +56,7 @@ export function ListRows({ items }: { items: Row[] }) {
             {item.href && (
               <span
                 aria-hidden
-                className="absolute inset-0 origin-bottom scale-y-0 bg-kooo-mint transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-y-100 group-focus-visible:scale-y-100"
+                className="absolute inset-0 origin-bottom scale-y-0 bg-white transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-y-100 group-focus-visible:scale-y-100"
               />
             )}
             <div data-cell className="relative flex items-baseline gap-4">

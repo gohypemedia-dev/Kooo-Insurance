@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Link from "next/link";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { legal } from "@/content/site";
 import { CornerDots } from "@/components/ui/corner-dots";
@@ -19,7 +20,7 @@ const facts = [
 const fsg = legal.documents.find((doc) => doc.label === "Financial Services Guide");
 
 const linkClass =
-  "group border-b border-white/60 pb-1 font-button text-lg text-white transition-colors hover:border-kooo-mint hover:text-kooo-mint";
+  "group border-b border-white/60 pb-1 font-button text-lg text-white transition-colors hover:border-white hover:text-white/80";
 
 // Who stands behind Kooo: its own brand, operating under Metrix Connect's licence.
 export function Licensee() {
@@ -60,14 +61,14 @@ export function Licensee() {
           <span
             key={i}
             data-ring
-            className="-ml-[9vw] block size-[62vw] shrink-0 rounded-full border border-kooo-mint/15 will-change-transform first:ml-0 md:size-[34vw]"
+            className="-ml-[9vw] block size-[62vw] shrink-0 rounded-full border border-white/10 will-change-transform first:ml-0 md:size-[34vw]"
           />
         ))}
       </div>
-      <CornerDots inset="1.5rem" className="text-kooo-mint" />
+      <CornerDots inset="1.5rem" className="text-white/30" />
 
       <div className="relative px-6 md:px-10">
-        <p className="font-button text-sm uppercase tracking-[0.2em] text-kooo-mint">Licensed and backed</p>
+        <p className="font-button text-sm uppercase tracking-[0.2em] text-white/70">Company Introduction · Licensed and backed</p>
         <SplitReveal as="h2" className="mt-6 max-w-5xl text-[clamp(2.5rem,5.4vw,5.25rem)] leading-[1.04]">
           Your own broker. Backed by a licensed network.
         </SplitReveal>
@@ -79,6 +80,9 @@ export function Licensee() {
             “an Authorised Representative network supporting experienced insurance brokers”.
           </SplitReveal>
           <div className="flex flex-wrap gap-x-10 gap-y-4 lg:justify-end">
+            <Link href="/about" className={linkClass}>
+              <RollText text="About Kooo" />
+            </Link>
             {fsg && (
               <a href={fsg.href} target="_blank" rel="noopener" className={linkClass}>
                 <RollText text={fsg.label} />
@@ -93,7 +97,7 @@ export function Licensee() {
         <dl data-facts className="mt-20 grid gap-x-8 sm:grid-cols-2 lg:mt-28 lg:grid-cols-4">
           {facts.map((fact) => (
             <div key={fact.label} data-fact className="border-t border-white/25 py-7 will-change-transform">
-              <dt className="font-button text-sm uppercase tracking-[0.16em] text-kooo-mint">{fact.label}</dt>
+              <dt className="font-button text-sm uppercase tracking-[0.16em] text-white/70">{fact.label}</dt>
               <dd className="mt-4 font-heading text-[clamp(1.6rem,2.2vw,2.25rem)] leading-tight">{fact.value}</dd>
               <dd className="mt-2 font-body text-base text-white/65">{fact.note}</dd>
             </div>

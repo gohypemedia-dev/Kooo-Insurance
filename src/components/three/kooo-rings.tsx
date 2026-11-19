@@ -46,7 +46,7 @@ export default function KoooRings({ color = "#0a1f44", active = true }: KoooRing
     >
       <ambientLight intensity={1.2} />
       <directionalLight position={[4, 4, 5]} intensity={2.5} />
-      <pointLight position={[-4, -2, 3]} intensity={40} color="#15cb8b" />
+      <pointLight position={[-4, -2, 3]} intensity={40} color="#ffffff" />
       <Rings color={color} />
     </Canvas>
   );
