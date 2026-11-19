@@ -1,7 +1,10 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
+import { useUi } from "@/lib/ui-store";
+import { cn } from "@/lib/utils";
 
 const TOTAL_FRAMES = 384;
 const FRAME_PREFIX = "/hero/KOO_Enhanced_1080p_30fps_Frames/frame_";
@@ -16,20 +19,25 @@ function getFrameUrl(index: number): string {
 }
 
 /**
- * High-performance, scroll-driven Canvas Frame Sequence with Smooth Parallax.
- * Replaces traditional video with 384 scroll-scrubbed frames of Sydney Harbour.
+ * High-performance, scroll-driven Canvas Frame Sequence with Next.js Hydration & Smooth Parallax.
  *
- * Features:
+ * Next.js Hydration Architecture:
+ * - Server-rendered initial frame via Next.js <Image priority /> ensures zero flash on page load
+ *   and optimal Core Web Vitals (LCP) before client scripts execute.
+ * - Client hydration handshake smoothly transitions from static SSR image to interactive 2D canvas.
  * - Direct 2D Canvas rendering with devicePixelRatio Retina scaling.
  * - Progressive keyframe preloading & non-blocking concurrent batch queue.
  * - Nearest-frame fallback ensuring 100% flicker-free rendering on fast scrolls.
- * - Smooth lerped scrub with subtle cinematic parallax scale and depth shifts.
+ * - Calibrated 2-3 scroll completion across a responsive h-[340vh] track.
  * - Visually clean (zero text overlay) with accessible sr-only SEO title.
  */
 export function VideoHero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scrollHintRef = useRef<HTMLDivElement>(null);
+
+  // Hydration state tracking
+  const [isCanvasReady, setIsCanvasReady] = useState(false);
 
   // In-memory cache of loaded image elements
   const imagesRef = useRef<Map<number, HTMLImageElement>>(new Map());
@@ -54,7 +62,7 @@ export function VideoHero() {
     }
 
     return new Promise((resolve, reject) => {
-      const img = new Image();
+      const img = new window.Image();
       img.src = getFrameUrl(index);
       img.onload = () => {
         imagesRef.current.set(index, img);
@@ -163,9 +171,9 @@ export function VideoHero() {
       const state = stateRef.current;
       const diff = state.targetProgress - state.currentProgress;
 
-      // Smooth lerp (0.12 factor provides cinematic damping)
+      // Responsive lerp (0.18 factor provides snappy, low-latency tracking calibrated for ~3s completion)
       if (Math.abs(diff) > 0.0003) {
-        state.currentProgress += diff * 0.12;
+        state.currentProgress += diff * 0.18;
       } else {
         state.currentProgress = state.targetProgress;
       }
@@ -226,15 +234,17 @@ export function VideoHero() {
     stateRef.current.animFrameId = requestAnimationFrame(loop);
   }, [getBestAvailableImage, loadFrame, renderImageToCanvas]);
 
-  // Preloading sequence
+  // Preloading sequence and hydration handshake
   useEffect(() => {
     let isCancelled = false;
 
-    // 1. Immediately load frame 1 and draw
+    // 1. Immediately load frame 1 and draw to canvas
     loadFrame(1)
       .then((firstImg) => {
         if (isCancelled) return;
         renderImageToCanvas(firstImg);
+        // Canvas is now primed with the first frame; transition from SSR image to canvas
+        setIsCanvasReady(true);
       })
       .catch(() => {});
 
@@ -264,7 +274,7 @@ export function VideoHero() {
         }
       }
 
-      const poolSize = 6;
+      const poolSize = 8;
       let currentIndex = 0;
 
       const worker = async () => {
@@ -324,30 +334,57 @@ export function VideoHero() {
     const container = containerRef.current;
     const targetY = container
       ? container.offsetTop + container.offsetHeight - window.innerHeight
-      : window.innerHeight * 2.4;
+      : window.innerHeight * 1.75;
 
-    window.scrollTo({
-      top: targetY,
-      behavior: "smooth",
-    });
+    const lenis = useUi.getState().lenis;
+    if (lenis) {
+      lenis.scrollTo(targetY, { duration: 3 });
+    } else {
+      window.scrollTo({
+        top: targetY,
+        behavior: "smooth",
+      });
+    }
   }, []);
 
   return (
     <section
       ref={containerRef}
       aria-label="Kooo Insurance interactive visual experience"
-      className="relative h-[340vh] w-full bg-navy text-white"
+      className="relative h-[275vh] w-full bg-navy text-white"
     >
       {/* Visually hidden heading for SEO and screen readers */}
       <h1 className="sr-only">Kooo Insurance — Protect your tomorrow, today</h1>
 
       {/* Pinned Sticky Viewport */}
       <div className="sticky top-0 h-svh min-h-[580px] w-full overflow-hidden">
+        {/* Next.js Hydration Layer: Instant SSR-rendered first frame to prevent blank canvas flash */}
+        <div
+          aria-hidden="true"
+          className={cn(
+            "absolute inset-0 h-full w-full overflow-hidden transition-opacity duration-700 ease-out",
+            isCanvasReady ? "opacity-0 pointer-events-none" : "opacity-100"
+          )}
+        >
+          <Image
+            src={getFrameUrl(1)}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            quality={90}
+            className="object-cover [filter:contrast(1.03)_brightness(1.01)_saturate(1.05)]"
+          />
+        </div>
+
         {/* Full-Bleed High-Performance Parallax Canvas (1080p Full HD) */}
         <canvas
           ref={canvasRef}
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover will-change-transform [filter:contrast(1.03)_brightness(1.01)_saturate(1.05)]"
+          className={cn(
+            "absolute inset-0 h-full w-full object-cover will-change-transform [filter:contrast(1.03)_brightness(1.01)_saturate(1.05)] transition-opacity duration-500",
+            isCanvasReady ? "opacity-100" : "opacity-0"
+          )}
         />
 
         {/* Soft Vignette Gradients (Lightweight so the frames stay vibrant and bright) */}
@@ -356,7 +393,7 @@ export function VideoHero() {
         {/* Bottom subtle transition fade */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-navy/40 to-transparent" />
 
-        {/* Animated "SCROLL TO PLAY" with Vertical Line (Shifted upwards, enhanced scale & blue pulse) */}
+        {/* Animated "SCROLL TO PLAY" with Vertical Line (Vibrant Electric Blue Sweep & Glowing Runner Bead) */}
         <div
           ref={scrollHintRef}
           onClick={scrollToNext}
@@ -369,16 +406,16 @@ export function VideoHero() {
               scrollToNext();
             }
           }}
-          className="absolute bottom-16 left-1/2 z-20 flex -translate-x-1/2 cursor-pointer flex-col items-center gap-3.5 transition-opacity duration-300 select-none sm:bottom-20 md:bottom-24"
+          className="absolute bottom-20 left-1/2 z-20 flex -translate-x-1/2 cursor-pointer flex-col items-center gap-3 transition-opacity duration-300 select-none filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] drop-shadow-[0_0_16px_rgba(0,30,80,0.6)] sm:bottom-24 md:bottom-28"
         >
-          {/* Animated Blue Shimmer Text - Increased Size */}
-          <span className="font-button text-sm font-bold uppercase tracking-[0.35em] text-transparent sm:text-base md:text-lg animate-scroll-shimmer-blue drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
+          {/* Animated Electric Blue Shimmer Text */}
+          <span className="font-button text-xs font-semibold uppercase tracking-[0.42em] sm:text-sm md:text-base animate-scroll-shimmer-blue">
             SCROLL TO PLAY
           </span>
 
-          {/* Vertical Line with Blue Pulse Animation - Proportional Size */}
-          <div className="relative h-11 w-[2px] overflow-hidden rounded-full bg-white/35 sm:h-14">
-            <div className="absolute inset-x-0 h-1/2 w-full animate-scroll-line-blue rounded-full bg-gradient-to-b from-transparent via-[#38bdf8] to-transparent shadow-[0_0_10px_#38bdf8]" />
+          {/* Vertical Line with Glowing Blue Runner Bead */}
+          <div className="relative h-11 w-[1.5px] overflow-hidden rounded-full bg-white/25 sm:h-12">
+            <div className="absolute top-0 inset-x-0 h-2.5 w-full animate-scroll-line-runner-blue rounded-full bg-gradient-to-b from-[#ffffff] via-[#00f0ff] to-[#0055ff] shadow-[0_0_8px_#00f0ff,0_0_14px_#0062ff]" />
           </div>
         </div>
       </div>

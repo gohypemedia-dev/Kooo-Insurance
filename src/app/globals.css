@@ -178,54 +178,60 @@
   100% { transform: translateY(200%); }
 }
 
-/* Animated Blue Shimmer for "SCROLL TO PLAY" */
+/* Animated Electric Blue Shimmer for "SCROLL TO PLAY" */
 @keyframes scroll-shimmer-blue {
   0% {
-    background-position: 150% 0;
+    background-position: 110% 0;
   }
   100% {
-    background-position: -150% 0;
+    background-position: -20% 0;
   }
 }
 
 .animate-scroll-shimmer-blue {
+  display: inline-block;
   background-image: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.6) 0%,
-    rgba(255, 255, 255, 0.6) 30%,
-    #60a5fa 42%,
-    #38bdf8 50%,
-    #00d2ff 58%,
-    rgba(255, 255, 255, 0.6) 70%,
-    rgba(255, 255, 255, 0.6) 100%
+    #e2e8f0 0%,
+    #e2e8f0 26%,
+    #38bdf8 36%,
+    #00f0ff 44%,
+    #0055ff 50%,
+    #00f0ff 56%,
+    #38bdf8 64%,
+    #e2e8f0 74%,
+    #e2e8f0 100%
   );
-  background-size: 250% 100%;
+  background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: scroll-shimmer-blue 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  color: transparent;
+  animation: scroll-shimmer-blue 2.4s linear infinite;
+  will-change: background-position;
 }
 
-/* Animated Vertical Line Blue Runner */
-@keyframes scroll-line-blue {
+/* Animated Vertical Line Electric Blue Droplet / Bead Runner */
+@keyframes scroll-line-runner-blue {
   0% {
-    transform: translateY(-100%);
+    transform: translateY(-4px);
     opacity: 0;
   }
-  25% {
+  15% {
     opacity: 1;
   }
-  75% {
+  80% {
     opacity: 1;
   }
   100% {
-    transform: translateY(200%);
+    transform: translateY(36px);
     opacity: 0;
   }
 }
 
-.animate-scroll-line-blue {
-  animation: scroll-line-blue 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+.animate-scroll-line-runner-blue {
+  animation: scroll-line-runner-blue 2.0s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform, opacity;
 }
 
 @media (prefers-reduced-motion: reduce) {
